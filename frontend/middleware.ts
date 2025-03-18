@@ -8,8 +8,6 @@ export default async function middleware(req: NextRequest) {
     const cookiesStore = await cookies()
     const isLogedIn = cookiesStore.has('pseudo')
 
-    console.log('isLogedIn', path)
-
     if (!isLogedIn && path !== '/login') {
         return NextResponse.redirect(new URL('/login', req.nextUrl))
     }

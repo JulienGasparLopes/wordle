@@ -3,7 +3,6 @@
 import { cookies } from "next/headers";
 
 const getFormattedPseudo = async () => {
-    console.log("getFormattedPseudo")
     const cookieStore = await cookies()
     const rawPseudo = cookieStore.get('pseudo')?.value as string
     return rawPseudo.toLowerCase().replace(" ", "_")
