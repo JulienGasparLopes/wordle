@@ -6,7 +6,7 @@ export default async function Game({ params }: any) {
   const currentGame = await fetchGame(gameId);
 
   return (
-    <div>
+    <div className="h-full p-8">
       <Guesses game={currentGame} />
     </div>
   );

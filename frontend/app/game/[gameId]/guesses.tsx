@@ -12,35 +12,34 @@ export default function Guesses({ game }: { game: Game }) {
   const [isFocused, setIsFocused] = React.useState(true);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const answer_found = state.guesses.length > 0 && state.guesses.some((guess: Guess) => guess.right_answer);
 
   useEffect(() => {
     setCurrentValue("");
+    scrollRef.current?.scrollTo(0, scrollRef.current?.scrollHeight);
   }, [state]);
 
   let focusUsed = false;
 
   return (
-    <div className="mx-auto w-1/2 flex-col justify-items-center justify-center">
-      {state.guesses.map((guess: Guess, index: number) => (
-        <div className="flex gap-1 mb-1" key={index}>
-          {guess.word.split("").map((letter: string, letter_index: number) => {
-            const color =
-              guess.hints[letter_index] === 0
-                ? "bg-green-600"
-                : guess.hints[letter_index] === 1
-                ? "bg-orange-500"
-                : "bg-red-600";
-            return (
-              <div
-                className={`rounded-sm w-5 h-5 ${color} leading-5 justify-items-center justify-center`}
-                key={letter_index}
-              >
-                <p>{letter}</p>
-              </div>
-            );
-          })}
-        </div>
-      ))}
+    <div className="mx-auto w-1/2 h-full grid grid-rows-[2fr_1fr] gap-8 justify-items-center justify-center">
+      <div ref={scrollRef} className="overflow-y-scroll" style={{ scrollbarColor: "white black" }}>
+        {state.guesses.map((guess: Guess, index: number) => (
+          <div className="flex gap-1 mb-1" key={index}>
+            {guess.word.split("").map((letter: string, letter_index: number) => {
+              const color =
+                guess.hints[letter_index] === 0
+                  ? "bg-green-600"
+                  : guess.hints[letter_index] === 1
+                  ? "bg-orange-500"
+                  : "bg-red-600";
+              return <LetterCell letter={letter} color={color} key={letter_index} />;
+            })}
+          </div>
+        ))}
+      </div>
       <form className="flex flex-col justify-items-center">
         <input className="hidden" type="number" name="gameId" required={true} value={game.id} readOnly />
         <input
@@ -56,7 +55,7 @@ export default function Guesses({ game }: { game: Game }) {
           onChange={(v) => v.currentTarget.value.length <= game.wordLength && setCurrentValue(v.currentTarget.value)}
           value={currentValue}
         />
-        <div className="flex gap-1" onClick={() => inputRef.current?.focus()}>
+        <div className="flex gap-1" onClick={() => !answer_found && inputRef.current?.focus()}>
           {[...Array(game.wordLength)].map((_, index) => {
             const letter = currentValue?.[index];
             let focused = false;
@@ -66,20 +65,38 @@ export default function Guesses({ game }: { game: Game }) {
                 focused = true;
               }
             }
-            const borderClass = focused ? "border-cyan-500 border-2" : "border-white border-2";
-            return (
-              <div
-                className={`text-black rounded-sm w-5 h-5 bg-white leading-4 justify-items-center justify-center ${borderClass}`}
-                key={index}
-              >
-                <p>{currentValue?.[index]}</p>
-              </div>
-            );
+            return <LetterInput letter={currentValue?.[index]} focused={focused} key={index} disabled={answer_found} />;
           })}
         </div>
-        <button formAction={formAction}>Upload</button>
+        <button
+          disabled={answer_found}
+          formAction={formAction}
+          className={answer_found ? "text-gray-400" : "text-white"}
+        >
+          Send Answer
+        </button>
+        {state.error && <div>{state.error}</div>}
       </form>
-      {state.error && <div>{state.error}</div>}
     </div>
   );
 }
+
+const LetterCell = ({ letter, color, focused }: { letter: string; color: string; focused?: boolean }) => {
+  return (
+    <div className={`rounded-sm w-10 h-10 ${color} leading-5 justify-items-center justify-center flex items-center`}>
+      <p className="text-xl">{letter}</p>
+    </div>
+  );
+};
+
+const LetterInput = ({ letter, focused, disabled }: { letter: string; focused: boolean; disabled: boolean }) => {
+  const borderClass = disabled ? "border-gray-400" : focused ? "border-cyan-500 border-2" : "border-white border-2";
+  const color = disabled ? "bg-gray-400" : "bg-white";
+  return (
+    <div
+      className={`text-black rounded-sm w-10 h-10 ${color} leading-4 justify-items-center justify-center ${borderClass} flex items-center`}
+    >
+      <p className="text-xl">{letter}</p>
+    </div>
+  );
+};

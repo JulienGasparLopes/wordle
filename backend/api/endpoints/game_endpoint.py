@@ -44,6 +44,7 @@ def get_game_list() -> tuple[str, int]:
 class GameGuessesResponse(BaseModel):
     word: str
     hints: list[int]
+    right_answer: bool
     guess_date: datetime
 
 
@@ -71,6 +72,7 @@ def get_game(game_id: str, user_id: str) -> tuple[str, int]:
             GameGuessesResponse(
                 word=guess.guess,
                 hints=[hint.value for hint in guess.clues],
+                right_answer=guess.guess == game.word,
                 guess_date=guess.guess_date,
             )
             for guess in user_guesses
