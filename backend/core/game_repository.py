@@ -1,5 +1,5 @@
 from typing import Protocol
-from backend.core.type_defs import Game, Guess, GuessHint
+from backend.core.type_defs import Game, Guess, GuessHint, UserId
 import datetime
 
 repository: "GameRepositoryPort"
@@ -23,7 +23,7 @@ class GameRepositoryPort(Protocol):
 
     def add_game(self, word: str) -> Game: ...
 
-    def get_guesses(self, user_id: int, game_id: int) -> list[Guess]: ...
+    def get_guesses(self, user_id: UserId, game_id: int) -> list[Guess]: ...
 
     def add_guess(self, guess: Guess) -> None: ...
 
@@ -81,7 +81,7 @@ class GameRepository:
         self._games[new_id] = new_game
         return new_game
 
-    def get_guesses(self, user_id: int, game_id: int) -> list[Guess]:
+    def get_guesses(self, user_id: UserId, game_id: int) -> list[Guess]:
         return [
             guess
             for guess in self._guesses
@@ -94,7 +94,7 @@ class GameRepository:
 
 FAKE_GUESSES = [
     Guess(
-        user_id=1,
+        user_id="pinzen",
         game_id=1,
         guess="xoder",
         clues=[
@@ -107,7 +107,7 @@ FAKE_GUESSES = [
         guess_date=datetime.datetime(2021, 1, 1, hour=3),
     ),
     Guess(
-        user_id=1,
+        user_id="pinzen",
         game_id=1,
         guess="older",
         clues=[

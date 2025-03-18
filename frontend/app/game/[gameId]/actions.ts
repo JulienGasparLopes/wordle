@@ -1,7 +1,17 @@
 'use server'
 
+import { cookies } from "next/headers";
+
+const getFormattedPseudo = async () => {
+    console.log("getFormattedPseudo")
+    const cookieStore = await cookies()
+    const rawPseudo = cookieStore.get('pseudo')?.value as string
+    return rawPseudo.toLowerCase().replace(" ", "_")
+}
+
 export const fetchGame = async (gameId: number) => {
-    const result_raw = await fetch(`http://127.0.0.1:5000/game/${gameId}/1`, {
+    const userPseudoId = await getFormattedPseudo()
+    const result_raw = await fetch(`http://127.0.0.1:5000/game/${gameId}/${userPseudoId}`, {
         method: "GET",
     },);
     const result = await result_raw.json()
@@ -18,8 +28,9 @@ export const fetchGame = async (gameId: number) => {
 
 
 export const sendGuess = async (prevState: GuessState, formData: FormData) => {
+    const userPseudoId = await getFormattedPseudo()
     const gameId = formData.get('gameId')
-    const result = await fetch(`http://127.0.0.1:5000/game/${gameId}/guess/1`, {
+    const result = await fetch(`http://127.0.0.1:5000/game/${gameId}/guess/${userPseudoId}`, {
         method: "POST",
         body: JSON.stringify({ guess: formData.get('guess') }),
         headers: {

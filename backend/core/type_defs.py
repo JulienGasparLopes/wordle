@@ -2,10 +2,11 @@ from dataclasses import dataclass
 import datetime
 from enum import Enum
 
+UserId = str
 
 @dataclass
 class User:
-    id: int
+    id: UserId
     username: str
 
 
@@ -25,7 +26,7 @@ class GuessHint(Enum):
 
 @dataclass
 class Guess:
-    user_id: int
+    user_id: UserId
     game_id: int
     guess: str
     guess_date: datetime.datetime

@@ -61,7 +61,7 @@ def get_game(game_id: str, user_id: str) -> tuple[str, int]:
     game = game_repository.repository.get_game(game_id=int(game_id))
 
     user_guesses = game_repository.repository.get_guesses(
-        user_id=int(user_id), game_id=game.id
+        user_id=user_id, game_id=game.id
     )
 
     response_object = GameResponse(
@@ -112,7 +112,7 @@ def post_guess(game_id: str, user_id: str) -> tuple[dict[str, Any], int]:
     add_guest_payload = AddGuessPayload.model_validate(request.json)
     game = game_repository.repository.get_game(game_id=int(game_id))
     guesses = game_repository.repository.get_guesses(
-        user_id=int(user_id), game_id=game.id
+        user_id=user_id, game_id=game.id
     )
 
     if any(guess.guess == game.word for guess in guesses):
@@ -134,7 +134,7 @@ def post_guess(game_id: str, user_id: str) -> tuple[dict[str, Any], int]:
             clues.append(GuessHint.INCORRECT)
 
     user_guess = Guess(
-        user_id=int(user_id),
+        user_id=user_id,
         game_id=int(game_id),
         guess=add_guest_payload.guess,
         guess_date=datetime.now(),
