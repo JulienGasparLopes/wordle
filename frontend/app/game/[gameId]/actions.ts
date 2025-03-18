@@ -1,10 +1,19 @@
 'use server'
 
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+export const redirectToLogout = async () => {
+    redirect("/logout")
+}
+
+export const getPseudo = async () => {
+    const cookieStore = await cookies()
+    return cookieStore.get('pseudo')?.value as string
+}
 
 const getFormattedPseudo = async () => {
-    const cookieStore = await cookies()
-    const rawPseudo = cookieStore.get('pseudo')?.value as string
+    const rawPseudo = await getPseudo()
     return rawPseudo.toLowerCase().replace(" ", "_")
 }
 
