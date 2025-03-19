@@ -13,9 +13,20 @@ export const getPseudo = async () => {
     return cookieStore.get('pseudo')?.value as string
 }
 
+
+export const getFormattedPseudo = async () => {
+    const rawPseudo = await getPseudo()
+    return rawPseudo.toLowerCase().replace(" ", "_")
+}
+
 export const fetchAllGames = async () => {
+    const userPseudoId = await getFormattedPseudo()
+
     const result_raw = await fetch(`http://127.0.0.1:5000/game`, {
         method: "GET",
+        headers: {
+            'Authorization': userPseudoId
+        }
     },);
     const results = await result_raw.json()
     return results.games.map((result: any) => ({

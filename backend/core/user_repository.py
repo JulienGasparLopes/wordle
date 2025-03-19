@@ -1,25 +1,49 @@
 from typing import Protocol
 
+from backend.core.database import Database
 from backend.core.type_defs import User, UserId
 
-repository: "UserRepositoryPort"
 
-
-def connect_user_repository() -> None:
-    global repository
-    repository = UserRepository()
+class UnfoundUserError(Exception): ...
 
 
 class UserRepositoryPort(Protocol):
+    def init_repository(self) -> None: ...
+
     def get_user(self, user_id: UserId) -> User: ...
+
+    def get_user_by_pseudo(self, pseudo: str) -> User: ...
+
+    def create_user(self, pseudo: str) -> User: ...
 
 
 class UserRepository:
-    def __init__(self):
-        self._users = {
-            1: User(id="pinzen", username="Pinzen"),
-            2: User(id="bobby", username="Bobby"),
-        }
+    def __init__(self, database: Database) -> None:
+        self._database = database
+
+    def init_repository(self) -> None:
+        self._database.execute(
+            """CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY,
+                pseudo TEXT UNIQUE
+            )
+            """
+        )
+        self._database.commit()
 
     def get_user(self, user_id: UserId) -> User:
-        return self._users[user_id]
+        raw_user = self._database.query_one("users", user_id)
+        return User(id=raw_user[0], username=raw_user[1])
+
+    def get_user_by_pseudo(self, pseudo: str) -> User:
+        try:
+            self._database.execute(f"SELECT * FROM users WHERE pseudo = ?", (pseudo,))
+            raw_user = self._database.fetch_one()
+            return User(id=raw_user[0], username=raw_user[1])
+        except Exception as e:
+            raise UnfoundUserError()
+
+    def create_user(self, pseudo: str) -> User:
+        self._database.execute("INSERT INTO users (pseudo) VALUES (?)", (pseudo,))
+        self._database.commit()
+        return self.get_user(self._database.get_last_row_id())

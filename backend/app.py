@@ -1,8 +1,6 @@
-from os import environ as env
-
 from backend.api.create_endpoints import create_endpoints
-from backend.core.game_repository import connect_game_repository
-from backend.core.user_repository import connect_user_repository
+from backend.core import make_game_repository, make_user_repository
+from backend.core.database import connect_database
 from flask import Flask
 from flask_cors import CORS
 from dotenv import find_dotenv, load_dotenv
@@ -14,19 +12,18 @@ if ENV_FILE:
 app = Flask(__name__)
 CORS(app)
 
-connect_game_repository()
-connect_user_repository()
+connect_database()
 
-# oauth = OAuth(app)
-# oauth.register(
-#     "auth0",
-#     client_id=env.get("AUTH0_CLIENT_ID"),
-#     client_secret=env.get("AUTH0_CLIENT_SECRET"),
-#     client_kwargs={
-#         "scope": "openid profile email",
-#     },
-#     server_metadata_url=f'https://{env.get("AUTH0_DOMAIN")}/.well-known/openid-configuration',
-# )
+user_repository = make_user_repository()
+user_repository.init_repository()
 
+game_repository = make_game_repository()
+game_repository.init_repository()
 
 create_endpoints(app)
+
+
+# For debuging purposes only
+games = game_repository.get_games(pagination=(10, 0))
+if not games:
+    game_repository.add_game(word="world")

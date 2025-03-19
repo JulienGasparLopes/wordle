@@ -1,17 +1,14 @@
 'use server'
 
-import { getPseudo } from "@/app/actions";
-
-
-const getFormattedPseudo = async () => {
-    const rawPseudo = await getPseudo()
-    return rawPseudo.toLowerCase().replace(" ", "_")
-}
+import { getFormattedPseudo } from "@/app/actions";
 
 export const fetchGame = async (gameId: number) => {
     const userPseudoId = await getFormattedPseudo()
-    const result_raw = await fetch(`http://127.0.0.1:5000/game/${gameId}/${userPseudoId}`, {
+    const result_raw = await fetch(`http://127.0.0.1:5000/game/${gameId}`, {
         method: "GET",
+        headers: {
+            'Authorization': userPseudoId
+        }
     },);
     const result = await result_raw.json()
     return {
@@ -29,11 +26,12 @@ export const fetchGame = async (gameId: number) => {
 export const sendGuess = async (prevState: GuessState, formData: FormData) => {
     const userPseudoId = await getFormattedPseudo()
     const gameId = formData.get('gameId')
-    const result = await fetch(`http://127.0.0.1:5000/game/${gameId}/guess/${userPseudoId}`, {
+    const result = await fetch(`http://127.0.0.1:5000/game/${gameId}/guess`, {
         method: "POST",
         body: JSON.stringify({ guess: formData.get('guess') }),
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': userPseudoId
         }
     });
     if (result.ok) {

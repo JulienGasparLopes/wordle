@@ -26,11 +26,13 @@ const RootLayout = async ({
         <div className="h-full p-8 grid grid-rows-[70px_auto]">
           <div className="flex justify-between">
             <h2 className="text-4xl font-bold mb-8">{pseudo}</h2>
-            <form>
-              <button className="text-white" formAction={redirectToLogout}>
-                Logout
-              </button>
-            </form>
+            {pseudo && (
+              <form>
+                <button className="text-white" formAction={redirectToLogout}>
+                  Logout
+                </button>
+              </form>
+            )}
           </div>
           <div>{children}</div>
         </div>
