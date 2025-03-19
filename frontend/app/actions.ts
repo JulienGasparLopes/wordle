@@ -3,6 +3,9 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+export const redirectToAllGames = async () => {
+    redirect("/")
+}
 
 export const redirectToLogout = async () => {
     redirect("/logout")

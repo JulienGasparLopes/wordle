@@ -1,6 +1,6 @@
 import localFont from "next/font/local";
 import "./globals.css";
-import { getPseudo, redirectToLogout } from "./actions";
+import { getPseudo, redirectToAllGames, redirectToLogout } from "./actions";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,13 +25,20 @@ const RootLayout = async ({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}>
         <div className="h-full p-8 grid grid-rows-[70px_auto]">
           <div className="flex justify-between">
-            <h2 className="text-4xl font-bold mb-8">{pseudo}</h2>
             {pseudo && (
-              <form>
-                <button className="text-white" formAction={redirectToLogout}>
-                  Logout
-                </button>
-              </form>
+              <>
+                <form>
+                  <button className="text-white" formAction={redirectToAllGames}>
+                    Home
+                  </button>
+                </form>
+                <h2 className="text-4xl font-bold mb-8">{pseudo}</h2>
+                <form>
+                  <button className="text-white" formAction={redirectToLogout}>
+                    Logout
+                  </button>
+                </form>
+              </>
             )}
           </div>
           <div>{children}</div>
