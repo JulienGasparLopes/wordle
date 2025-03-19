@@ -1,16 +1,7 @@
 'use server'
 
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { getPseudo } from "@/app/actions";
 
-export const redirectToLogout = async () => {
-    redirect("/logout")
-}
-
-export const getPseudo = async () => {
-    const cookieStore = await cookies()
-    return cookieStore.get('pseudo')?.value as string
-}
 
 const getFormattedPseudo = async () => {
     const rawPseudo = await getPseudo()
