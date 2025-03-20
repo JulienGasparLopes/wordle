@@ -32,7 +32,7 @@ export const fetchAllGames = async () => {
         }
     },);
     const results = await result_raw.json()
-    return results.games.map((result: any) => ({
+    return results.games.map((result: { game_id: number, word_length: number, start_date: string }) => ({
         id: result.game_id,
         wordLength: result.word_length,
         date: result.start_date,

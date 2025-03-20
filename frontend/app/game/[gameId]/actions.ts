@@ -14,7 +14,7 @@ export const fetchGame = async (gameId: number) => {
     return {
         id: result.game_id,
         wordLength: result.word_length,
-        guesses: result.guesses.map((guess: any) => ({
+        guesses: result.guesses.map((guess: { word: string, hints: [number], right_answer: boolean }) => ({
             word: guess.word,
             hints: guess.hints,
             right_answer: guess.right_answer,
