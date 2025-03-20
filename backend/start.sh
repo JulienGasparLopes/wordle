@@ -1,2 +1,2 @@
 source .venv/bin/activate
-flask --app app run --port=10000
+gunicorn -w 4 -b 0.0.0.0:10000 app:app
