@@ -1,7 +1,7 @@
 from typing import Protocol
-from backend.core.type_defs import Game, Guess, GuessHint, UserId
+from core.type_defs import Game, Guess, GuessHint, UserId
 import datetime
-from backend.core.database import Database
+from core.database import Database
 
 
 class GameRepositoryPort(Protocol):

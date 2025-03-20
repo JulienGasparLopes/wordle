@@ -2,9 +2,9 @@ from dataclasses import Field
 from datetime import datetime
 from typing import Any
 
-from backend.core import make_game_repository
-from backend.core.type_defs import Guess, GuessHint
-from backend.core.word_service import WordService, WordServiceport
+from core import make_game_repository
+from core.type_defs import Guess, GuessHint
+from core.word_service import WordService, WordServiceport
 from flask import Blueprint, request, g
 from pydantic import BaseModel
 
