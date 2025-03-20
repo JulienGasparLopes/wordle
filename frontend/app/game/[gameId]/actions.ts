@@ -4,7 +4,7 @@ import { getFormattedPseudo } from "@/app/actions";
 
 export const fetchGame = async (gameId: number) => {
     const userPseudoId = await getFormattedPseudo()
-    const result_raw = await fetch(`http://127.0.0.1:5000/game/${gameId}`, {
+    const result_raw = await fetch(`https://wordle-cbuv.onrender.com/game/${gameId}`, {
         method: "GET",
         headers: {
             'Authorization': userPseudoId
@@ -26,7 +26,7 @@ export const fetchGame = async (gameId: number) => {
 export const sendGuess = async (prevState: GuessState, formData: FormData) => {
     const userPseudoId = await getFormattedPseudo()
     const gameId = formData.get('gameId')
-    const result = await fetch(`http://127.0.0.1:5000/game/${gameId}/guess`, {
+    const result = await fetch(`https://wordle-cbuv.onrender.com/game/${gameId}/guess`, {
         method: "POST",
         body: JSON.stringify({ guess: formData.get('guess') }),
         headers: {
