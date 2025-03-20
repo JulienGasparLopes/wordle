@@ -1,2 +1,2 @@
 source .venv/bin/activate
-flask --app app run
+flask --app app run --port=10000
