@@ -168,6 +168,9 @@ def post_new_game() -> tuple[dict[str, Any], int]:
     game_repository = make_game_repository()
 
     payload = NewGamePayload.model_validate(request.json)
-    new_word = word_service.get_random_word(payload.word_length)
+    while True:
+        new_word = word_service.get_random_word(payload.word_length)
+        if len(new_word) == len({letter for letter in new_word}):
+            break
     game_repository.add_game(new_word)
     return {"word": new_word}, 200
