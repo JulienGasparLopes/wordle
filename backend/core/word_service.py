@@ -29,7 +29,7 @@ class WordService(WordServiceport):
                 WORDS_COMMON = [word.strip().replace("\n", "") for word in words_common]
 
     def is_word_valid(self, word: str) -> bool:
-        return word in WORDS_LIST and word in WORDS_COMMON
+        return word in WORDS_LIST
 
     def get_random_word(self, word_length: int) -> str:
         while True:
