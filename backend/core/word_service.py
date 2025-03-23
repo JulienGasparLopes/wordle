@@ -1,3 +1,4 @@
+import os
 import random
 from typing import Protocol
 
@@ -14,15 +15,16 @@ class WordServiceport(Protocol):
 class WordService(WordServiceport):
 
     def __init__(self):
+        path = "./core" if os.path.exists("./core") else "./backend/core"
         global WORDS_LIST
         if not WORDS_LIST:
-            with open("./core/words_all.txt", "r") as f:
+            with open(path + "/words_all.txt", "r") as f:
                 words_list = f.readlines()
                 WORDS_LIST = [word.strip().replace("\n", "") for word in words_list]
 
         global WORDS_COMMON
         if not WORDS_COMMON:
-            with open("./core/words_common.txt", "r") as f:
+            with open(path + "/words_common.txt", "r") as f:
                 words_common = f.readlines()
                 WORDS_COMMON = [word.strip().replace("\n", "") for word in words_common]
 
