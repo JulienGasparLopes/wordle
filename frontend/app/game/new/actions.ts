@@ -13,6 +13,5 @@ export const createNewGame = async (formData: FormData) => {
         })
     },);
     const result = await result_raw.json()
-    console.log(result)
     redirect(`/`)
 }
