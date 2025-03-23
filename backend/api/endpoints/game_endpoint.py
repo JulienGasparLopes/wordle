@@ -183,9 +183,10 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
 
     guesses = game_repository.get_guesses(game_id=int(game_id))
     guesses_by_user_id: dict[int, list[Guess]] = {}
+    user_who_guessed = set()
     for guess in guesses:
-        if guess.clues != [GuessHint.CORRECT] * len(guess.guess):
-            continue
+        if guess.clues == [GuessHint.CORRECT] * len(guess.guess):
+            user_who_guessed.add(guess.user_id)
 
         if guess.user_id not in guesses_by_user_id:
             guesses_by_user_id[guess.user_id] = []
@@ -198,6 +199,7 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
             "win_date": user_guesses[0].guess_date.isoformat(),
         }
         for user_id, user_guesses in guesses_by_user_id.items()
+        if user_id in user_who_guessed
     ]
 
     return {"leaderboard": leaderboard}
