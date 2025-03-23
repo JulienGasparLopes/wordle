@@ -24,8 +24,8 @@ const RootLayout = async ({
   return (
     <html lang="en" className="h-full">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full bg-black`}>
-        <div className="h-full p-8 grid grid-rows-[70px_auto]">
-          <div className="flex justify-between">
+        <div className="h-full p-8 grid grid-rows-[70px_auto] justify-items-center">
+          <div className="flex justify-between w-full">
             {pseudo && (
               <>
                 <form>
@@ -42,7 +42,7 @@ const RootLayout = async ({
               </>
             )}
           </div>
-          <div>{children}</div>
+          <div className="h-full">{children}</div>
         </div>
       </body>
     </html>
