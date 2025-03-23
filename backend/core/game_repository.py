@@ -98,7 +98,9 @@ class GameRepository:
             start = page_offset * number_per_page
             end = start + number_per_page
             return all_games[start:end]
-        raise ValueError("Must provide date_range or pagination")
+        return all_games
+        # TODO add frontend pagination
+        # raise ValueError("Must provide date_range or pagination")
 
     def add_game(self, word: str) -> Game:
         self._database.execute(

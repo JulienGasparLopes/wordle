@@ -26,7 +26,7 @@ class GameListReponse(BaseModel):
 @game_bp.route("/game", methods=["GET"])
 def get_game_list() -> tuple[str, int]:
     game_repository = make_game_repository()
-    games = game_repository.get_games(pagination=(10, 0))
+    games = game_repository.get_games()  # TODO add pagination=(10, 0)
 
     response_object = GameListReponse(
         games=[
@@ -172,5 +172,6 @@ def post_new_game() -> tuple[dict[str, Any], int]:
         new_word = word_service.get_random_word(payload.word_length)
         if len(new_word) == len({letter for letter in new_word}):
             break
+
     game_repository.add_game(new_word)
     return {"word": new_word}, 200
