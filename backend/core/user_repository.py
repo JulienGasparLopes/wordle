@@ -1,4 +1,4 @@
-from typing import Protocol, override
+from typing import Protocol
 
 from backend.core.database import Database
 from backend.core.type_defs import User, UserId
@@ -32,12 +32,10 @@ class UserRepository(UserRepositoryPort):
         )
         self._database.commit()
 
-    @override
     def get_user(self, user_id: UserId) -> User:
         raw_user = self._database.query_one("users", user_id)
         return User(id=raw_user[0], pseudo=raw_user[1], formatted_pseudo=raw_user[2])
 
-    @override
     def get_user_by_formatted_pseudo(self, formatted_pseudo: str) -> User:
         try:
             self._database.execute(
@@ -50,7 +48,6 @@ class UserRepository(UserRepositoryPort):
         except Exception as e:
             raise UnfoundUserError()
 
-    @override
     def create_user(self, pseudo: str) -> User:
         formatted_pseudo = pseudo.lower().replace(" ", "_")
         self._database.execute(
