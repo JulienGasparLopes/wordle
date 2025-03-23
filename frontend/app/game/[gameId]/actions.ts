@@ -4,7 +4,7 @@ import { getFormattedPseudo } from "@/app/actions";
 
 export const fetchGame = async (gameId: number) => {
     const userPseudoId = await getFormattedPseudo()
-    const result_raw = await fetch(`http://localhost:6000/game/${gameId}`, {
+    const result_raw = await fetch(`http://localhost:5001/game/${gameId}`, {
         method: "GET",
         headers: {
             'Authorization': userPseudoId
@@ -26,7 +26,7 @@ export const fetchGame = async (gameId: number) => {
 export const sendGuess = async (prevState: GuessState, formData: FormData) => {
     const userPseudoId = await getFormattedPseudo()
     const gameId = formData.get('gameId')
-    const result = await fetch(`http://localhost:6000/game/${gameId}/guess`, {
+    const result = await fetch(`http://localhost:5001/game/${gameId}/guess`, {
         method: "POST",
         body: JSON.stringify({ guess: formData.get('guess') }),
         headers: {

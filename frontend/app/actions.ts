@@ -25,7 +25,7 @@ export const getFormattedPseudo = async () => {
 export const fetchAllGames = async () => {
     const userPseudoId = await getFormattedPseudo()
 
-    const result_raw = await fetch(`http://localhost:6000/game`, {
+    const result_raw = await fetch(`http://localhost:5001/game`, {
         method: "GET",
         headers: {
             'Authorization': userPseudoId
