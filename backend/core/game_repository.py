@@ -64,8 +64,8 @@ class GameRepository:
     def _db_values_to_guess(self, raw_guess: tuple) -> Guess:
         return Guess(
             id=raw_guess[0],
-            user_id=raw_guess[1],
-            game_id=raw_guess[2],
+            game_id=raw_guess[1],
+            user_id=raw_guess[2],
             guess=raw_guess[3],
             guess_date=datetime.datetime.strptime(raw_guess[4], "%Y-%m-%d %H:%M:%S.%f"),
             clues=[GuessHint(int(clue)) for clue in raw_guess[5].split(",")],

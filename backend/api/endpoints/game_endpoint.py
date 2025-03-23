@@ -184,17 +184,20 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
     guesses = game_repository.get_guesses(game_id=int(game_id))
     guesses_by_user_id: dict[int, list[Guess]] = {}
     for guess in guesses:
+        if guess.clues != [GuessHint.CORRECT] * len(guess.guess):
+            continue
+
         if guess.user_id not in guesses_by_user_id:
             guesses_by_user_id[guess.user_id] = []
         guesses_by_user_id[guess.user_id].append(guess)
 
-    return {
-        "leaderboard": [
-            {
-                "user_pseudo": user_repository.get_user(user_id).pseudo,
-                "guess_count": len(user_guesses),
-                "win_date": user_guesses[0].guess_date,
-            }
-            for user_id, user_guesses in guesses_by_user_id.items()
-        ]
-    }
+    leaderboard = [
+        {
+            "user_pseudo": user_repository.get_user(user_id).pseudo,
+            "guess_count": len(user_guesses),
+            "win_date": user_guesses[0].guess_date.isoformat(),
+        }
+        for user_id, user_guesses in guesses_by_user_id.items()
+    ]
+
+    return {"leaderboard": leaderboard}
