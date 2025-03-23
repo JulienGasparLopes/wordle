@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from backend.core import make_game_repository, make_user_repository, user_repository
+from backend.core import make_game_repository, make_user_repository
 from backend.core.type_defs import Guess, GuessHint
 from backend.core.word_service import WordService, WordServiceport
 from flask import Blueprint, request, g
@@ -32,7 +32,7 @@ def get_game_list() -> tuple[str, int]:
             Game(
                 game_id=game.id,
                 word_length=len(game.word),
-                start_date=game.start_date,
+                start_date=game.start_date.isoformat(),
             )
             for game in games
         ]
@@ -74,7 +74,7 @@ def get_game(game_id: str) -> tuple[str, int]:
                 word=guess.guess,
                 hints=[hint.value for hint in guess.clues],
                 right_answer=guess.guess == game.word,
-                guess_date=guess.guess_date,
+                guess_date=guess.guess_date.isoformat(),
             )
             for guess in user_guesses
         ],
@@ -91,7 +91,7 @@ def get_current_game() -> tuple[str, int]:
     response_object = Game(
         game_id=current_game.id,
         word_length=len(current_game.word),
-        start_date=current_game.start_date,
+        start_date=current_game.start_date.isoformat(),
     )
 
     return response_object.model_dump_json(), 200
@@ -202,4 +202,4 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
         if user_id in user_who_guessed
     ]
 
-    return {"leaderboard": leaderboard}
+    return {"leaderboard": sorted(leaderboard, key=lambda x: x["win_date"])}, 200
