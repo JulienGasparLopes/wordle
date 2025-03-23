@@ -25,7 +25,7 @@ export const getFormattedPseudo = async () => {
 export const fetchAllGames = async () => {
     const userPseudoId = await getFormattedPseudo()
 
-    const result_raw = await fetch(`https://wordle-cbuv.onrender.com/game`, {
+    const result_raw = await fetch(`https://127.0.0.1:5000/game`, {
         method: "GET",
         headers: {
             'Authorization': userPseudoId

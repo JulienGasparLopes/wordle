@@ -4,7 +4,7 @@ import { getFormattedPseudo } from "@/app/actions";
 
 export const fetchCurrentGame = async () => {
     const userPseudoId = await getFormattedPseudo()
-    const result_raw = await fetch(`https://wordle-cbuv.onrender.com/game/current`, {
+    const result_raw = await fetch(`https://127.0.0.1:5000/game/current`, {
         method: "GET",
         headers: {
             'Authorization': userPseudoId
