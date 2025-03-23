@@ -1,6 +1,6 @@
-from api.create_endpoints import create_endpoints
-from core import make_game_repository, make_user_repository
-from core.database import connect_database
+from backend.api.create_endpoints import create_endpoints
+from backend.core import make_game_repository, make_user_repository
+from backend.core.database import connect_database
 from flask import Flask
 from flask_cors import CORS
 from dotenv import find_dotenv, load_dotenv

@@ -1,7 +1,7 @@
 from typing import Protocol
 
-from core.database import Database
-from core.type_defs import User, UserId
+from backend.core.database import Database
+from backend.core.type_defs import User, UserId
 
 
 class UnfoundUserError(Exception): ...
