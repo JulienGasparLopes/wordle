@@ -8,6 +8,7 @@ export const loginAction = async (formData: FormData) => {
     const cookieStore = await cookies();
     if (pseudo.length > 2) {
         cookieStore.set("pseudo", pseudo);
+        cookieStore.set("login_date", new Date().toISOString());
         redirect("/game/current");
     }
 }

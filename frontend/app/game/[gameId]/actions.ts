@@ -1,12 +1,14 @@
 'use server'
 
-import { getFormattedPseudo } from "@/app/actions";
+import { getPseudo } from "@/app/connection";
+
 
 export const fetchGame = async (gameId: number) => {
-    const userPseudoId = await getFormattedPseudo()
+    const userPseudoId = await getPseudo()
     const result_raw = await fetch(`http://localhost:5001/game/${gameId}`, {
         method: "GET",
         headers: {
+            'Content-Type': 'application/json',
             'Authorization': userPseudoId
         }
     },);
@@ -24,7 +26,7 @@ export const fetchGame = async (gameId: number) => {
 
 
 export const sendGuess = async (prevState: GuessState, formData: FormData) => {
-    const userPseudoId = await getFormattedPseudo()
+    const userPseudoId = await getPseudo()
     const gameId = formData.get('gameId')
     const result = await fetch(`http://localhost:5001/game/${gameId}/guess`, {
         method: "POST",

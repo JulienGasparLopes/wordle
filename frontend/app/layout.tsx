@@ -1,6 +1,7 @@
 import localFont from "next/font/local";
 import "./globals.css";
-import { getPseudo, redirectToAllGames, redirectToLogout } from "./actions";
+import { redirectToAllGames, redirectToLogout } from "./actions";
+import { getPseudo } from "./connection";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

@@ -1,9 +1,9 @@
 'use server'
 
-import { getFormattedPseudo } from "@/app/actions";
+import { getPseudo } from "@/app/connection";
 
 export const fetchCurrentGame = async () => {
-    const userPseudoId = await getFormattedPseudo()
+    const userPseudoId = await getPseudo()
     const result_raw = await fetch(`http://localhost:5001/game/current`, {
         method: "GET",
         headers: {

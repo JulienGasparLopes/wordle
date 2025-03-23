@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from backend.core import make_game_repository
+from backend.core import make_game_repository, make_user_repository, user_repository
 from backend.core.type_defs import Guess, GuessHint
 from backend.core.word_service import WordService, WordServiceport
 from flask import Blueprint, request, g
@@ -63,7 +63,7 @@ def get_game(game_id: str) -> tuple[str, int]:
     game_repository = make_game_repository()
     game = game_repository.get_game(game_id=int(game_id))
 
-    user_guesses = game_repository.get_guesses(user_id=user_id, game_id=game.id)
+    user_guesses = game_repository.get_guesses(game_id=game.id, user_id=user_id)
 
     response_object = GameResponse(
         game_id=game.id,
@@ -117,7 +117,7 @@ def post_guess(game_id: str) -> tuple[dict[str, Any], int]:
     add_guest_payload = AddGuessPayload.model_validate(request.json)
     word_guess = add_guest_payload.guess.lower()
     game = game_repository.get_game(game_id=int(game_id))
-    guesses = game_repository.get_guesses(user_id=user_id, game_id=game.id)
+    guesses = game_repository.get_guesses(game_id=game.id, user_id=user_id)
 
     if any(guess.guess == game.word for guess in guesses):
         return {"error": "User already guessed this word"}, 400
@@ -174,3 +174,27 @@ def post_new_game() -> tuple[dict[str, Any], int]:
 
     game_repository.add_game(new_word)
     return {"word": new_word}, 200
+
+
+@game_bp.route("/game/<game_id>/leaderboard", methods=["GET"])
+def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
+    game_repository = make_game_repository()
+    user_repository = make_user_repository()
+
+    guesses = game_repository.get_guesses(game_id=int(game_id))
+    guesses_by_user_id: dict[int, list[Guess]] = {}
+    for guess in guesses:
+        if guess.user_id not in guesses_by_user_id:
+            guesses_by_user_id[guess.user_id] = []
+        guesses_by_user_id[guess.user_id].append(guess)
+
+    return {
+        "leaderboard": [
+            {
+                "user_pseudo": user_repository.get_user(user_id).pseudo,
+                "guess_count": len(user_guesses),
+                "win_date": user_guesses[0].guess_date,
+            }
+            for user_id, user_guesses in guesses_by_user_id.items()
+        ]
+    }

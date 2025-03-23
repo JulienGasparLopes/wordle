@@ -10,7 +10,8 @@ GuessId = int
 @dataclass
 class User:
     id: UserId
-    username: str
+    pseudo: str
+    formatted_pseudo: str
 
 
 @dataclass

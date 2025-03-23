@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Protocol, override
 
 from backend.core.database import Database
 from backend.core.type_defs import User, UserId
@@ -12,12 +12,12 @@ class UserRepositoryPort(Protocol):
 
     def get_user(self, user_id: UserId) -> User: ...
 
-    def get_user_by_pseudo(self, pseudo: str) -> User: ...
+    def get_user_by_formatted_pseudo(self, formatted_pseudo: str) -> User: ...
 
     def create_user(self, pseudo: str) -> User: ...
 
 
-class UserRepository:
+class UserRepository(UserRepositoryPort):
     def __init__(self, database: Database) -> None:
         self._database = database
 
@@ -25,25 +25,37 @@ class UserRepository:
         self._database.execute(
             """CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
-                pseudo TEXT UNIQUE
+                pseudo TEXT UNIQUE,
+                formatted_pseudo TEXT UNIQUE
             )
             """
         )
         self._database.commit()
 
+    @override
     def get_user(self, user_id: UserId) -> User:
         raw_user = self._database.query_one("users", user_id)
-        return User(id=raw_user[0], username=raw_user[1])
+        return User(id=raw_user[0], pseudo=raw_user[1], formatted_pseudo=raw_user[2])
 
-    def get_user_by_pseudo(self, pseudo: str) -> User:
+    @override
+    def get_user_by_formatted_pseudo(self, formatted_pseudo: str) -> User:
         try:
-            self._database.execute(f"SELECT * FROM users WHERE pseudo = ?", (pseudo,))
+            self._database.execute(
+                f"SELECT * FROM users WHERE formatted_pseudo = ?", (formatted_pseudo,)
+            )
             raw_user = self._database.fetch_one()
-            return User(id=raw_user[0], username=raw_user[1])
+            return User(
+                id=raw_user[0], pseudo=raw_user[1], formatted_pseudo=raw_user[2]
+            )
         except Exception as e:
             raise UnfoundUserError()
 
+    @override
     def create_user(self, pseudo: str) -> User:
-        self._database.execute("INSERT INTO users (pseudo) VALUES (?)", (pseudo,))
+        formatted_pseudo = pseudo.lower().replace(" ", "_")
+        self._database.execute(
+            "INSERT INTO users (pseudo, formatted_pseudo) VALUES (?, ?)",
+            (pseudo, formatted_pseudo),
+        )
         self._database.commit()
         return self.get_user(self._database.get_last_row_id())

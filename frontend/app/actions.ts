@@ -1,7 +1,7 @@
 'use server'
 
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getHeaders, getPseudo } from "./connection";
 
 export const redirectToAllGames = async () => {
     redirect("/")
@@ -11,25 +11,12 @@ export const redirectToLogout = async () => {
     redirect("/logout")
 }
 
-export const getPseudo = async () => {
-    const cookieStore = await cookies()
-    return cookieStore.get('pseudo')?.value as string
-}
-
-
-export const getFormattedPseudo = async () => {
-    const rawPseudo = await getPseudo()
-    return rawPseudo.toLowerCase().replace(" ", "_")
-}
-
 export const fetchAllGames = async () => {
-    const userPseudoId = await getFormattedPseudo()
+    const userPseudo = await getPseudo()
 
     const result_raw = await fetch(`http://localhost:5001/game`, {
         method: "GET",
-        headers: {
-            'Authorization': userPseudoId
-        }
+        headers: await getHeaders()
     },);
     const results_raw = await result_raw.json()
     const results = results_raw.games.map((result: { game_id: number, word_length: number, start_date: string }) => ({

@@ -19,7 +19,9 @@ class GameRepositoryPort(Protocol):
 
     def add_game(self, word: str) -> Game: ...
 
-    def get_guesses(self, user_id: UserId, game_id: int) -> list[Guess]: ...
+    def get_guesses(
+        self, *, game_id: int, user_id: UserId | None = None
+    ) -> list[Guess]: ...
 
     def add_guess(self, guess: Guess) -> None: ...
 
@@ -111,11 +113,19 @@ class GameRepository:
         game_id = self._database.get_last_row_id()
         return self.get_game(game_id)
 
-    def get_guesses(self, user_id: UserId, game_id: int) -> list[Guess]:
-        self._database.execute(
-            "SELECT * FROM guesses WHERE user_id = ? AND game_id = ?",
-            (user_id, game_id),
-        )
+    def get_guesses(
+        self, *, game_id: int, user_id: UserId | None = None
+    ) -> list[Guess]:
+        if user_id is None:
+            self._database.execute(
+                "SELECT * FROM guesses WHERE game_id = ?",
+                (game_id,),
+            )
+        else:
+            self._database.execute(
+                "SELECT * FROM guesses WHERE user_id = ? AND game_id = ?",
+                (user_id, game_id),
+            )
         raw_guesses = self._database.fetch_all()
         return [self._db_values_to_guess(guess) for guess in raw_guesses]
 
