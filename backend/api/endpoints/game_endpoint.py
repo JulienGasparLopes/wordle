@@ -222,5 +222,10 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
         for user_id, user_guesses in guesses_by_user_id.items()
         if user_id in user_who_guessed
     ]
+    sorted_leaderboard = sorted(
+        leaderboard, key=lambda x: (x["guess_count"], x["win_date"])
+    )
+    for index, entry in enumerate(sorted_leaderboard):
+        entry["index"] = index
 
-    return {"leaderboard": sorted(leaderboard, key=lambda x: x["win_date"])}, 200
+    return {"leaderboard": sorted_leaderboard}, 200

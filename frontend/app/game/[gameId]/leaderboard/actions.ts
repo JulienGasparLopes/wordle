@@ -10,6 +10,6 @@ export const getLeaderboard = async (gameId: number) => {
     },);
     const result = await result_raw.json()
 
-    return result["leaderboard"];
+    return result["leaderboard"].sort((a: { index: number }, b: { index: number }) => a.index - b.index);
 }
 
