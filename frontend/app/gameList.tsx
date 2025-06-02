@@ -17,9 +17,10 @@ const GameLine = ({ game }: any) => {
   return (
     <div className="flex gap-8">
       <div
-        className="border-solid border-white border rounded-md flex p-2 gap-8"
+        className="border-solid border-white border rounded-md flex p-2 px-4 gap-8"
         onClick={() => redirect(`/game/${game.id}`)}
       >
+        <GameState state={game.state} />
         <div>Word Length : {game.wordLength}</div>
         <div>({userFormatDate(game.date)})</div>
       </div>
@@ -28,4 +29,9 @@ const GameLine = ({ game }: any) => {
       </div>
     </div>
   );
+};
+
+const GameState = ({ state }: { state: string }) => {
+  const color = state === "NOT_STARTED" ? "bg-gray-500" : state === "IN_PROGRESS" ? "bg-yellow-500" : "bg-green-500";
+  return <div className={`w-6 h-6 rounded-xl ${color}`}></div>;
 };

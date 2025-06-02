@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from backend.core import make_game_repository, make_user_repository
 from backend.core.type_defs import Guess, GuessHint
@@ -18,25 +18,46 @@ class Game(BaseModel):
     start_date: datetime
 
 
+class GameInfo(Game):
+    state: Literal["NOT_STARTED", "IN_PROGRESS", "FINISHED"]
+
+
 class GameListReponse(BaseModel):
-    games: list[Game]
+    games: list[GameInfo]
 
 
 @game_bp.route("/game", methods=["GET"])
 def get_game_list() -> tuple[str, int]:
+    user_id: str = g.user_id
+
     game_repository = make_game_repository()
     games = game_repository.get_games()  # TODO add pagination=(10, 0)
 
-    response_object = GameListReponse(
-        games=[
-            Game(
+    formatted_games: list[Game] = []
+    for game in games:
+        user_guesses = game_repository.get_guesses(game_id=game.id, user_id=user_id)
+        if not user_guesses:
+            state = "NOT_STARTED"
+        elif any(
+            guess.clues == [GuessHint.CORRECT] * len(guess.guess)
+            for guess in user_guesses
+        ):
+            state = "FINISHED"
+        else:
+            state = "IN_PROGRESS"
+
+        formatted_games.append(
+            GameInfo(
                 game_id=game.id,
                 word_length=len(game.word),
-                start_date=game.start_date.isoformat(),
+                start_date=game.start_date,
+                state=state,
             )
-            for game in games
-        ]
-    )
+        )
+
+    response_object = GameListReponse(games=formatted_games)
+
+    print(response_object)
 
     return response_object.model_dump_json(), 200
 
