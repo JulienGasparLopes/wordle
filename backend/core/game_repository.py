@@ -1,7 +1,7 @@
 from typing import Protocol
 from backend.core.type_defs import Game, Guess, GuessHint, UserId
 import datetime
-from backend.core.database import Database
+from backend.database.database import DatabaseOld
 
 
 class GameRepositoryPort(Protocol):
@@ -27,7 +27,7 @@ class GameRepositoryPort(Protocol):
 
 
 class GameRepository:
-    def __init__(self, database: Database) -> None:
+    def __init__(self, database: DatabaseOld) -> None:
         self._database = database
 
     def init_repository(self) -> None:

@@ -1,6 +1,6 @@
 from backend.core.game_repository import GameRepository, GameRepositoryPort
 from backend.core.user_repository import UserRepository, UserRepositoryPort
-import backend.core.database as database
+import backend.database.database as database
 
 
 def make_user_repository() -> UserRepositoryPort:

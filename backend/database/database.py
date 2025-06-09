@@ -1,15 +1,18 @@
 import sqlite3
 from typing import Any
 
-database: "Database"
+from backend.database.model.base_model import Base
+from sqlalchemy import create_engine
+
+database: "DatabaseOld"
 
 
-def connect_database() -> None:
+def connect_database_old() -> None:
     global database
-    database = Database()
+    database = DatabaseOld()
 
 
-class Database:
+class DatabaseOld:
     def __init__(self):
         self._connection = sqlite3.connect("database.db", check_same_thread=False)
         self._cursor = self._connection.cursor()
@@ -36,3 +39,25 @@ class Database:
     def query_all(self, table: str) -> Any:
         self.execute(f"SELECT * FROM {table}")
         return self.fetch_all()
+
+
+database: "Database"
+
+
+def connect_database() -> None:
+    global database
+    database = Database()
+
+
+def init_database() -> None:
+    Base.metadata.create_all(bind=database._engine)
+
+
+class Database:
+    def __init__(self):
+        self._engine = create_engine(
+            "sqlite:///database.db", connect_args={"check_same_thread": False}
+        )
+
+    def get_session(self):
+        return self._engine.begin()
