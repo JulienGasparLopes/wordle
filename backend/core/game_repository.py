@@ -26,7 +26,7 @@ class GameRepositoryPort(Protocol):
     def add_guess(self, guess: Guess) -> None: ...
 
 
-class GameRepository:
+class GameRepositoryOld:
     def __init__(self, database: DatabaseOld) -> None:
         self._database = database
 

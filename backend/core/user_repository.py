@@ -19,7 +19,7 @@ class UserRepositoryPort(Protocol):
     def rename_user(self, user_id: UserId, new_pseudo: str) -> User: ...
 
 
-class UserRepository(UserRepositoryPort):
+class UserRepositoryOld(UserRepositoryPort):
     def __init__(self, database: DatabaseOld) -> None:
         self._database = database
 
