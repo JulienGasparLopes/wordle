@@ -35,4 +35,4 @@ class Guess:
     game_id: GameId
     guess: str
     guess_date: datetime.datetime
-    clues: list[GuessHint]
+    hints: list[GuessHint]

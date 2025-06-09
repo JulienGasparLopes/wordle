@@ -41,7 +41,7 @@ def get_game_list() -> tuple[str, int]:
         if not user_guesses:
             state = "NOT_STARTED"
         elif any(
-            guess.clues == [GuessHint.CORRECT] * len(guess.guess)
+            guess.hints == [GuessHint.CORRECT] * len(guess.guess)
             for guess in user_guesses
         ):
             state = "FINISHED"
@@ -94,7 +94,7 @@ def get_game(game_id: str) -> tuple[str, int]:
         guesses=[
             GameGuessesResponse(
                 word=guess.guess,
-                hints=[hint.value for hint in guess.clues],
+                hints=[hint.value for hint in guess.hints],
                 right_answer=guess.guess == game.word,
                 guess_date=guess.guess_date.isoformat(),
             )
@@ -152,14 +152,14 @@ def post_guess(game_id: str) -> tuple[dict[str, Any], int]:
     if not word_service.is_word_valid(word_guess):
         return {"error": "Invalid word"}, 400
 
-    clues: list[GuessHint] = []
+    hints: list[GuessHint] = []
     for index, letter in enumerate(word_guess):
         if letter == game.word[index]:
-            clues.append(GuessHint.CORRECT)
+            hints.append(GuessHint.CORRECT)
         elif letter in game.word:
-            clues.append(GuessHint.PRESENT)
+            hints.append(GuessHint.PRESENT)
         else:
-            clues.append(GuessHint.INCORRECT)
+            hints.append(GuessHint.INCORRECT)
 
     user_guess = Guess(
         id=-1,
@@ -167,14 +167,14 @@ def post_guess(game_id: str) -> tuple[dict[str, Any], int]:
         game_id=int(game_id),
         guess=add_guest_payload.guess,
         guess_date=datetime.now(),
-        clues=clues,
+        hints=hints,
     )
 
     game_repository.add_guess(user_guess)
 
     response_object = AddGuessResponse(
         word=add_guest_payload.guess,
-        hints=[hint.value for hint in clues],
+        hints=[hint.value for hint in hints],
         right_answer=add_guest_payload.guess == game.word,
     )
 
@@ -211,7 +211,7 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
     guesses_by_user_id: dict[int, list[Guess]] = {}
     user_who_guessed = set()
     for guess in guesses:
-        if guess.clues == [GuessHint.CORRECT] * len(guess.guess):
+        if guess.hints == [GuessHint.CORRECT] * len(guess.guess):
             user_who_guessed.add(guess.user_id)
 
         if guess.user_id not in guesses_by_user_id:

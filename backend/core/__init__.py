@@ -1,11 +1,11 @@
-from backend.core.game_repository import GameRepositoryOld, GameRepositoryPort
-from backend.core.user_repository import UserRepositoryOld, UserRepositoryPort
+from backend.core.game_repository import GameRepository, GameRepositoryPort
+from backend.core.user_repository import UserRepository, UserRepositoryPort
 import backend.database.database as database
 
 
 def make_user_repository() -> UserRepositoryPort:
-    return UserRepositoryOld(database.database)
+    return UserRepository(database.database)
 
 
 def make_game_repository() -> GameRepositoryPort:
-    return GameRepositoryOld(database.database)
+    return GameRepository(database.database)

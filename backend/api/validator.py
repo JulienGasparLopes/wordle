@@ -81,14 +81,14 @@ def require_auth(f):
         token = get_token_auth_header()
         try:
             payload = verify_decode_jwt(token)
-            user_pseudo = payload.get("sub", "")
+            connection_id = payload.get("sub", "")
 
             # Wrong pattern that implies calling the database before each request
             user_repository = make_user_repository()
             try:
-                user = user_repository.get_user_by_formatted_pseudo(user_pseudo)
+                user = user_repository.get_user_by_connection_id(connection_id)
             except Exception as e:
-                user = user_repository.create_user(user_pseudo)
+                user = user_repository.create_user(connection_id)
 
             g.user_id = user.id
         except Exception as e:
