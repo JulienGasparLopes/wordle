@@ -1,6 +1,6 @@
 import localFont from "next/font/local";
 import "./globals.css";
-import { redirectToAllGames, redirectToLogout } from "./actions";
+import { fetchUserInfo, redirectToAllGames } from "./actions";
 import { auth0 } from "@/lib/auth0";
 
 const geistSans = localFont({
@@ -19,8 +19,7 @@ const RootLayout = async ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  //TODO: replace with real name
-  const sessionData = await auth0.getSession();
+  const userInfo = await fetchUserInfo();
 
   return (
     <html lang="en" className="h-full">
@@ -29,15 +28,15 @@ const RootLayout = async ({
           <div className="flex justify-between w-full">
             {
               <>
-                <form>
-                  <button className="text-white" formAction={redirectToAllGames}>
+                {/* <button className="text-white" formAction={redirectToAllGames}>
                     Home
-                  </button>
-                </form>
-                <h2 className="text-4xl font-bold mb-8">{sessionData?.user?.name}</h2>
-                <form>
+                  </button> */}
+                <a href="/">Home</a>
+                <h2 className="text-4xl font-bold mb-8">{userInfo?.pseudo}</h2>
+                <div className="flex gap-8">
+                  <a href="/user/rename">Rename</a>
                   <a href="/auth/logout">Logout</a>
-                </form>
+                </div>
               </>
             }
           </div>

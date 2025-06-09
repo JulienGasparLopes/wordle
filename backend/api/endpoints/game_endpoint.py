@@ -10,8 +10,6 @@ from backend.api.validator import require_auth
 
 game_bp = Blueprint("template", __name__)
 
-# TODO: use authed version to retrieve user info
-
 
 class Game(BaseModel):
     game_id: int
@@ -236,37 +234,37 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
     return {"leaderboard": sorted_leaderboard}, 200
 
 
-# class RenamePayload(BaseModel):
-#     pseudo: int
+class RenamePayload(BaseModel):
+    pseudo: str
 
 
-# @game_bp.route("/user/rename", methods=["POST"])
-# @require_auth
-# def post_rename() -> tuple[dict[str, Any], int]:
-#     user_id: str = g.user_id
-#     payload: RenamePayload = RenamePayload.model_validate(request.json)
+@game_bp.route("/user/rename", methods=["POST"])
+@require_auth
+def post_rename() -> tuple[dict[str, Any], int]:
+    user_id: str = g.user_id
+    payload: RenamePayload = RenamePayload.model_validate(request.json)
 
-#     user_repository = make_user_repository()
+    user_repository = make_user_repository()
 
-#     user_repository.rename_user(user_id, payload.pseudo)
+    user_repository.rename_user(user_id, payload.pseudo)
 
-#     return {"status": "ok"}, 200
-
-
-# class UserInfoPayload(BaseModel):
-#     pseudo: str
+    return {"status": "ok"}, 200
 
 
-# @game_bp.route("/user/info", methods=["GET"])
-# @require_auth
-# def get_user_info() -> tuple[dict[str, Any], int]:
-#     user_id: str = g.user_id
+class UserInfoPayload(BaseModel):
+    pseudo: str
 
-#     user_repository = make_user_repository()
-#     user = user_repository.get_user(user_id)
 
-#     user_info = UserInfoPayload(
-#         pseudo=user.pseudo,
-#     )
+@game_bp.route("/user/current", methods=["GET"])
+@require_auth
+def get_user_info() -> tuple[dict[str, Any], int]:
+    user_id: str = g.user_id
 
-#     return user_info, 200
+    user_repository = make_user_repository()
+    user = user_repository.get_user(user_id)
+
+    user_info = UserInfoPayload(
+        pseudo=user.pseudo,
+    )
+
+    return user_info.model_dump(), 200

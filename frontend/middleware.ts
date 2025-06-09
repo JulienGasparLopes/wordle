@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { auth0 } from "./lib/auth0";
+import { fetchUserInfo } from "./app/actions";
 
 export async function middleware(request: NextRequest) {
-    console.log("Middleware triggered for:", request.nextUrl.pathname);
     const authRes = await auth0.middleware(request);
 
     // authentication routes — let the middleware handle it
@@ -15,6 +15,12 @@ export async function middleware(request: NextRequest) {
 
     if (!isAuthenticated) {
         return NextResponse.redirect(new URL("/auth/login", request.url));
+    }
+
+    // TODO: avoid fetching user info on every request
+    const userInfo = await fetchUserInfo();
+    if (userInfo?.pseudo == "New Player" && !request.nextUrl.pathname.startsWith("/user/rename")) {
+        return NextResponse.redirect(new URL("/user/rename", request.url));
     }
 
     return NextResponse.next()

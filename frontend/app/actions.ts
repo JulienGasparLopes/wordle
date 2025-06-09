@@ -7,9 +7,15 @@ export const redirectToAllGames = async () => {
     redirect("/")
 }
 
-export const redirectToLogout = async () => {
-    redirect("/logout")
+export const fetchUserInfo = async () => {
+    //TODO: save into session to create cache (or just use next cache)
+    const result_raw = await fetch(`http://localhost:5001/user/current`, {
+        method: "GET",
+        headers: await getHeaders()
+    });
+    return await result_raw.json();
 }
+
 
 export const fetchAllGames = async () => {
     const result_raw = await fetch(`http://localhost:5001/game`, {
@@ -25,3 +31,4 @@ export const fetchAllGames = async () => {
     }));
     return results.sort((a: { date: string; }, b: { date: string; }) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
+
