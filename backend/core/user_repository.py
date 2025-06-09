@@ -16,6 +16,8 @@ class UserRepositoryPort(Protocol):
 
     def create_user(self, pseudo: str) -> User: ...
 
+    def rename_user(self, user_id: UserId, new_pseudo: str) -> User: ...
+
 
 class UserRepository(UserRepositoryPort):
     def __init__(self, database: Database) -> None:
@@ -56,3 +58,11 @@ class UserRepository(UserRepositoryPort):
         )
         self._database.commit()
         return self.get_user(self._database.get_last_row_id())
+
+    def rename_user(self, user_id: UserId, new_pseudo: str) -> User:
+        self._database.execute(
+            "UPDATE users SET pseudo = ? WHERE id = ?",
+            (new_pseudo, user_id),
+        )
+        self._database.commit()
+        return self.get_user(user_id)

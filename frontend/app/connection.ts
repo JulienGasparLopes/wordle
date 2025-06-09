@@ -1,3 +1,4 @@
+import { auth0 } from "@/lib/auth0"
 import { cookies } from "next/headers"
 
 export const getPseudo = async () => {
@@ -7,8 +8,10 @@ export const getPseudo = async () => {
 
 
 export const getHeaders = async () => {
+    const sessionData = await auth0.getSession();
+
     return {
         'Content-Type': 'application/json',
-        'Authorization': await getPseudo()
+        'Authorization': "Bearer " + sessionData?.tokenSet?.accessToken,
     }
 }
