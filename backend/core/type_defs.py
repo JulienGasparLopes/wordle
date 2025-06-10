@@ -11,7 +11,7 @@ GuessId = int
 class User:
     id: UserId
     pseudo: str
-    formatted_pseudo: str
+    is_admin: bool
 
 
 @dataclass

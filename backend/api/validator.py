@@ -75,24 +75,27 @@ def verify_decode_jwt(token):
     raise Exception("Unable to find appropriate key")
 
 
-def require_auth(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = get_token_auth_header()
-        try:
-            payload = verify_decode_jwt(token)
-            connection_id = payload.get("sub", "")
-
-            # Wrong pattern that implies calling the database before each request
-            user_repository = make_user_repository()
+def require_auth(require_admin_role: bool = False):
+    def wrapper(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            token = get_token_auth_header()
             try:
-                user = user_repository.get_user_by_connection_id(connection_id)
+                payload = verify_decode_jwt(token)
+                connection_id = payload.get("sub", "")
+
+                # Wrong pattern that implies calling the database before each request
+                user_repository = make_user_repository()
+                try:
+                    user = user_repository.get_user_by_connection_id(connection_id)
+                except Exception as e:
+                    user = user_repository.create_user(connection_id)
+
+                g.user_id = user.id
             except Exception as e:
-                user = user_repository.create_user(connection_id)
+                raise Exception("Unauthorized") from e
+            return f(*args, **kwargs)
 
-            g.user_id = user.id
-        except Exception as e:
-            raise Exception("Unauthorized") from e
-        return f(*args, **kwargs)
+        return decorated
 
-    return decorated
+    return wrapper

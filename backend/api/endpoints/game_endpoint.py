@@ -8,7 +8,7 @@ from flask import Blueprint, request, g
 from pydantic import BaseModel
 from backend.api.validator import require_auth
 
-game_bp = Blueprint("template", __name__)
+game_bp = Blueprint("game_bp", __name__)
 
 
 class Game(BaseModel):
@@ -26,7 +26,7 @@ class GameListReponse(BaseModel):
 
 
 @game_bp.route("/game", methods=["GET"])
-@require_auth
+@require_auth()
 def get_game_list() -> tuple[str, int]:
     user_id: str = g.user_id
 
@@ -76,7 +76,7 @@ class GameResponse(BaseModel):
 
 
 @game_bp.route("/game/<game_id>", methods=["GET"])
-@require_auth
+@require_auth()
 def get_game(game_id: str) -> tuple[str, int]:
     user_id: str = g.user_id
 
@@ -104,7 +104,7 @@ def get_game(game_id: str) -> tuple[str, int]:
 
 
 @game_bp.route("/game/current", methods=["GET"])
-@require_auth
+@require_auth()
 def get_current_game() -> tuple[str, int]:
     game_repository = make_game_repository()
     current_game = game_repository.get_game_at_datetime(game_datetime=datetime.now())
@@ -129,7 +129,7 @@ class AddGuessResponse(BaseModel):
 
 
 @game_bp.route("/game/<game_id>/guess", methods=["POST"])
-@require_auth
+@require_auth()
 def post_guess(game_id: str) -> tuple[dict[str, Any], int]:
     user_id: str = g.user_id
 
@@ -184,7 +184,7 @@ class NewGamePayload(BaseModel):
 
 
 @game_bp.route("/game/new", methods=["POST"])
-@require_auth
+@require_auth(require_admin_role=True)
 def post_new_game() -> tuple[dict[str, Any], int]:
     word_service: WordServiceport = WordService()
     game_repository = make_game_repository()
@@ -200,7 +200,7 @@ def post_new_game() -> tuple[dict[str, Any], int]:
 
 
 @game_bp.route("/game/<game_id>/leaderboard", methods=["GET"])
-@require_auth
+@require_auth()
 def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
     game_repository = make_game_repository()
     user_repository = make_user_repository()
@@ -232,39 +232,3 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
         entry["index"] = index
 
     return {"leaderboard": sorted_leaderboard}, 200
-
-
-class RenamePayload(BaseModel):
-    pseudo: str
-
-
-@game_bp.route("/user/rename", methods=["POST"])
-@require_auth
-def post_rename() -> tuple[dict[str, Any], int]:
-    user_id: str = g.user_id
-    payload: RenamePayload = RenamePayload.model_validate(request.json)
-
-    user_repository = make_user_repository()
-
-    user_repository.rename_user(user_id, payload.pseudo)
-
-    return {"status": "ok"}, 200
-
-
-class UserInfoPayload(BaseModel):
-    pseudo: str
-
-
-@game_bp.route("/user/current", methods=["GET"])
-@require_auth
-def get_user_info() -> tuple[dict[str, Any], int]:
-    user_id: str = g.user_id
-
-    user_repository = make_user_repository()
-    user = user_repository.get_user(user_id)
-
-    user_info = UserInfoPayload(
-        pseudo=user.pseudo,
-    )
-
-    return user_info.model_dump(), 200

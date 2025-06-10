@@ -4,6 +4,7 @@ from typing import Protocol
 from backend.database.database import Database
 from backend.core.type_defs import User, UserId
 from backend.database.model import User as UserModel
+from backend.database.model.user import DeprecatedUser as DeprecatedUserModel
 
 
 class UnfoundUserError(Exception): ...
@@ -11,6 +12,8 @@ class UnfoundUserError(Exception): ...
 
 class UserRepositoryPort(Protocol):
     def get_user(self, user_id: UserId) -> User: ...
+
+    def get_users(self) -> list[User]: ...
 
     def get_user_by_connection_id(self, connection_id: str) -> User: ...
 
@@ -27,8 +30,18 @@ class UserRepository(UserRepositoryPort):
         with self._database.get_session() as session:
             raw_user = session.get(UserModel, user_id)
         return User(
-            id=raw_user.id, pseudo=raw_user.pseudo, formatted_pseudo=raw_user.pseudo
+            id=raw_user.id,
+            pseudo=raw_user.pseudo,
+            is_admin=raw_user.is_admin,
         )
+
+    def get_users(self) -> list[User]:
+        with self._database.get_session() as session:
+            raw_users = session.query(UserModel).all()
+        return [
+            User(id=user.id, pseudo=user.pseudo, is_admin=user.is_admin)
+            for user in raw_users
+        ]
 
     def get_user_by_connection_id(self, connection_id: str) -> User:
         with self._database.get_session() as session:
@@ -37,9 +50,7 @@ class UserRepository(UserRepositoryPort):
                 .filter(UserModel.connection_id == connection_id)
                 .one()
             )
-        return User(
-            id=raw_user.id, pseudo=raw_user.pseudo, formatted_pseudo=raw_user.pseudo
-        )
+        return User(id=raw_user.id, pseudo=raw_user.pseudo, is_admin=raw_user.is_admin)
 
     def create_user(self, connection_id: str) -> User:
         with self._database.get_session() as session:
@@ -57,3 +68,23 @@ class UserRepository(UserRepositoryPort):
             user.pseudo = new_pseudo
             session.commit()
         return self.get_user(user_id)
+
+
+class DeprecatedUserRepository(UserRepositoryPort):
+    def __init__(self, database: Database) -> None:
+        self._database = database
+
+    def get_user(self, user_id: UserId) -> User: ...
+
+    def get_users(self) -> list[User]:
+        with self._database.get_session() as session:
+            raw_users = session.query(DeprecatedUserModel).all()
+        return [
+            User(id=user.id, pseudo=user.pseudo, is_admin=False) for user in raw_users
+        ]
+
+    def get_user_by_connection_id(self, connection_id: str) -> User: ...
+
+    def create_user(self, pseudo: str) -> User: ...
+
+    def rename_user(self, user_id: UserId, new_pseudo: str) -> User: ...

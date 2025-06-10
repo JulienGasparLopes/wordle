@@ -23,6 +23,11 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/user/rename", request.url));
     }
 
+    // protected routes
+    if (request.nextUrl.pathname.startsWith("/admin") && !userInfo?.is_admin) {
+        return NextResponse.redirect(new URL("/", request.url));
+    }
+
     return NextResponse.next()
 }
 
