@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
     const isAuthenticated = !!sessionData?.user;
 
     if (!isAuthenticated) {
-        return NextResponse.redirect(new URL("/auth/login", request.url));
+        return NextResponse.redirect(new URL("/auth/login", request.nextUrl.origin));
     }
 
     // TODO: avoid fetching user info on every request
