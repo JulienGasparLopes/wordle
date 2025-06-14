@@ -6,22 +6,13 @@ import { sendGuess } from "./actions";
 export default function Guesses({ game }: { game: Game }) {
   const [state, formAction] = React.useActionState<GuessState, any>(sendGuess, {
     error: null,
+    gameId: game.id,
+    wordLength: game.wordLength,
+    locked: game.locked,
     guesses: game.guesses,
   });
-  const [currentValue, setCurrentValue] = React.useState("");
-  const [isFocused, setIsFocused] = React.useState(true);
 
-  const inputRef = React.useRef<HTMLInputElement>(null);
   const scrollRef = React.useRef<HTMLDivElement>(null);
-
-  const answer_found = state.guesses.length > 0 && state.guesses.some((guess: Guess) => guess.right_answer);
-
-  useEffect(() => {
-    setCurrentValue("");
-    scrollRef.current?.scrollTo(0, scrollRef.current?.scrollHeight);
-  }, [state]);
-
-  let focusUsed = false;
 
   return (
     <div className="mx-auto w-1/2 h-full grid grid-rows-[2fr_1fr] gap-8 justify-items-center justify-center">
@@ -40,46 +31,65 @@ export default function Guesses({ game }: { game: Game }) {
           </div>
         ))}
       </div>
-      <form className="flex flex-col justify-items-center">
-        <input className="hidden" type="number" name="gameId" required={true} value={game.id} readOnly />
-        <input
-          ref={inputRef}
-          className="w-0 h-0"
-          autoComplete="off"
-          type="text"
-          name="guess"
-          required={true}
-          autoFocus
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          onChange={(v) => v.currentTarget.value.length <= game.wordLength && setCurrentValue(v.currentTarget.value)}
-          value={currentValue}
-        />
-        <div className="flex gap-1" onClick={() => !answer_found && inputRef.current?.focus()}>
-          {[...Array(game.wordLength)].map((_, index) => {
-            const letter = currentValue?.[index];
-            let focused = false;
-            if (isFocused && !focusUsed) {
-              if (!letter || index === game.wordLength - 1) {
-                focusUsed = true;
-                focused = true;
-              }
-            }
-            return <LetterInput letter={currentValue?.[index]} focused={focused} key={index} disabled={answer_found} />;
-          })}
-        </div>
-        <button
-          disabled={answer_found}
-          formAction={formAction}
-          className={answer_found ? "text-gray-400" : "text-white"}
-        >
-          Send Answer
-        </button>
-        {state.error && <div>{state.error}</div>}
-      </form>
+      {!!state.locked ? (
+        <div className="text-gray-400 w-48 text-center">Game is locked</div>
+      ) : (
+        <GuessSelector state={state} formAction={formAction} scrollRef={scrollRef} />
+      )}
     </div>
   );
 }
+
+const GuessSelector = ({ state, formAction, scrollRef }: { state: GuessState; formAction: any; scrollRef: any }) => {
+  let focusUsed = false;
+  const answer_found = state.guesses.length > 0 && state.guesses.some((guess: Guess) => guess.right_answer);
+
+  const [currentValue, setCurrentValue] = React.useState("");
+  const [isFocused, setIsFocused] = React.useState(true);
+
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setCurrentValue("");
+    scrollRef.current?.scrollTo(0, scrollRef.current?.scrollHeight);
+  }, [state]);
+
+  return (
+    <form className="flex flex-col justify-items-center">
+      <input className="hidden" type="number" name="gameId" required={true} value={state.gameId} readOnly />
+      <input
+        ref={inputRef}
+        className="w-0 h-0"
+        autoComplete="off"
+        type="text"
+        name="guess"
+        required={true}
+        autoFocus
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        onChange={(v) => v.currentTarget.value.length <= state.wordLength && setCurrentValue(v.currentTarget.value)}
+        value={currentValue}
+      />
+      <div className="flex gap-1" onClick={() => !answer_found && inputRef.current?.focus()}>
+        {[...Array(state.wordLength)].map((_, index) => {
+          const letter = currentValue?.[index];
+          let focused = false;
+          if (isFocused && !focusUsed) {
+            if (!letter || index === state.wordLength - 1) {
+              focusUsed = true;
+              focused = true;
+            }
+          }
+          return <LetterInput letter={currentValue?.[index]} focused={focused} key={index} disabled={answer_found} />;
+        })}
+      </div>
+      <button disabled={answer_found} formAction={formAction} className={answer_found ? "text-gray-400" : "text-white"}>
+        Send Answer
+      </button>
+      {state.error && <div>{state.error}</div>}
+    </form>
+  );
+};
 
 const LetterCell = ({ letter, color, focused }: { letter: string; color: string; focused?: boolean }) => {
   return (

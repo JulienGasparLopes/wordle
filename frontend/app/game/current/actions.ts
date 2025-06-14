@@ -1,14 +1,11 @@
 'use server'
 
-import { getPseudo } from "@/app/connection";
+import { getHeaders } from "@/app/connection";
 
 export const fetchCurrentGame = async () => {
-    const userPseudoId = await getPseudo()
     const result_raw = await fetch(`http://localhost:5001/game/current`, {
         method: "GET",
-        headers: {
-            'Authorization': userPseudoId
-        }
+        headers: await getHeaders()
     },);
     const result = await result_raw.json()
     return {

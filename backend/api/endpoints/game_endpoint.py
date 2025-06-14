@@ -1,21 +1,25 @@
 from datetime import datetime
 from typing import Any, Literal
 
-from backend.core import make_game_repository, make_user_repository
+from backend.core import (
+    make_deprecated_game_repository,
+    make_game_repository,
+    make_user_repository,
+)
 from backend.core.type_defs import Guess, GuessHint
 from backend.core.word_service import WordService, WordServiceport
 from flask import Blueprint, request, g
 from pydantic import BaseModel
+from backend.api.validator import require_auth
 
-game_bp = Blueprint("template", __name__)
-
-# TODO: use authed version to retrieve user info
+game_bp = Blueprint("game_bp", __name__)
 
 
 class Game(BaseModel):
     game_id: int
     word_length: int
     start_date: datetime
+    locked: bool
 
 
 class GameInfo(Game):
@@ -27,19 +31,20 @@ class GameListReponse(BaseModel):
 
 
 @game_bp.route("/game", methods=["GET"])
+@require_auth()
 def get_game_list() -> tuple[str, int]:
     user_id: str = g.user_id
 
     game_repository = make_game_repository()
     games = game_repository.get_games()  # TODO add pagination=(10, 0)
 
-    formatted_games: list[Game] = []
+    formatted_games: list[GameInfo] = []
     for game in games:
         user_guesses = game_repository.get_guesses(game_id=game.id, user_id=user_id)
         if not user_guesses:
             state = "NOT_STARTED"
         elif any(
-            guess.clues == [GuessHint.CORRECT] * len(guess.guess)
+            guess.hints == [GuessHint.CORRECT] * len(guess.guess)
             for guess in user_guesses
         ):
             state = "FINISHED"
@@ -52,12 +57,11 @@ def get_game_list() -> tuple[str, int]:
                 word_length=len(game.word),
                 start_date=game.start_date,
                 state=state,
+                locked=game.locked,
             )
         )
 
     response_object = GameListReponse(games=formatted_games)
-
-    print(response_object)
 
     return response_object.model_dump_json(), 200
 
@@ -73,11 +77,13 @@ class GameResponse(BaseModel):
     game_id: int
     word_length: int
     start_date: datetime
+    locked: bool
 
     guesses: list[GameGuessesResponse]
 
 
 @game_bp.route("/game/<game_id>", methods=["GET"])
+@require_auth()
 def get_game(game_id: str) -> tuple[str, int]:
     user_id: str = g.user_id
 
@@ -90,10 +96,11 @@ def get_game(game_id: str) -> tuple[str, int]:
         game_id=game.id,
         word_length=len(game.word),
         start_date=game.start_date,
+        locked=game.locked,
         guesses=[
             GameGuessesResponse(
                 word=guess.guess,
-                hints=[hint.value for hint in guess.clues],
+                hints=[hint.value for hint in guess.hints],
                 right_answer=guess.guess == game.word,
                 guess_date=guess.guess_date.isoformat(),
             )
@@ -105,6 +112,7 @@ def get_game(game_id: str) -> tuple[str, int]:
 
 
 @game_bp.route("/game/current", methods=["GET"])
+@require_auth()
 def get_current_game() -> tuple[str, int]:
     game_repository = make_game_repository()
     current_game = game_repository.get_game_at_datetime(game_datetime=datetime.now())
@@ -113,6 +121,7 @@ def get_current_game() -> tuple[str, int]:
         game_id=current_game.id,
         word_length=len(current_game.word),
         start_date=current_game.start_date.isoformat(),
+        locked=current_game.locked,
     )
 
     return response_object.model_dump_json(), 200
@@ -129,15 +138,20 @@ class AddGuessResponse(BaseModel):
 
 
 @game_bp.route("/game/<game_id>/guess", methods=["POST"])
+@require_auth()
 def post_guess(game_id: str) -> tuple[dict[str, Any], int]:
     user_id: str = g.user_id
 
     word_service: WordServiceport = WordService()
     game_repository = make_game_repository()
 
+    game = game_repository.get_game(game_id=int(game_id))
+
+    if game.locked:
+        return {"error": "Game is locked"}, 403
+
     add_guest_payload = AddGuessPayload.model_validate(request.json)
     word_guess = add_guest_payload.guess.lower()
-    game = game_repository.get_game(game_id=int(game_id))
     guesses = game_repository.get_guesses(game_id=game.id, user_id=user_id)
 
     if any(guess.guess == game.word for guess in guesses):
@@ -149,14 +163,14 @@ def post_guess(game_id: str) -> tuple[dict[str, Any], int]:
     if not word_service.is_word_valid(word_guess):
         return {"error": "Invalid word"}, 400
 
-    clues: list[GuessHint] = []
+    hints: list[GuessHint] = []
     for index, letter in enumerate(word_guess):
         if letter == game.word[index]:
-            clues.append(GuessHint.CORRECT)
+            hints.append(GuessHint.CORRECT)
         elif letter in game.word:
-            clues.append(GuessHint.PRESENT)
+            hints.append(GuessHint.PRESENT)
         else:
-            clues.append(GuessHint.INCORRECT)
+            hints.append(GuessHint.INCORRECT)
 
     user_guess = Guess(
         id=-1,
@@ -164,14 +178,14 @@ def post_guess(game_id: str) -> tuple[dict[str, Any], int]:
         game_id=int(game_id),
         guess=add_guest_payload.guess,
         guess_date=datetime.now(),
-        clues=clues,
+        hints=hints,
     )
 
     game_repository.add_guess(user_guess)
 
     response_object = AddGuessResponse(
         word=add_guest_payload.guess,
-        hints=[hint.value for hint in clues],
+        hints=[hint.value for hint in hints],
         right_answer=add_guest_payload.guess == game.word,
     )
 
@@ -183,6 +197,7 @@ class NewGamePayload(BaseModel):
 
 
 @game_bp.route("/game/new", methods=["POST"])
+@require_auth(require_admin_role=True)
 def post_new_game() -> tuple[dict[str, Any], int]:
     word_service: WordServiceport = WordService()
     game_repository = make_game_repository()
@@ -193,11 +208,12 @@ def post_new_game() -> tuple[dict[str, Any], int]:
         if len(new_word) == len({letter for letter in new_word}):
             break
 
-    game_repository.add_game(new_word)
+    game_repository.add_game(new_word, start_date=datetime.now())
     return {"word": new_word}, 200
 
 
 @game_bp.route("/game/<game_id>/leaderboard", methods=["GET"])
+@require_auth()
 def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
     game_repository = make_game_repository()
     user_repository = make_user_repository()
@@ -206,7 +222,7 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
     guesses_by_user_id: dict[int, list[Guess]] = {}
     user_who_guessed = set()
     for guess in guesses:
-        if guess.clues == [GuessHint.CORRECT] * len(guess.guess):
+        if guess.hints == [GuessHint.CORRECT] * len(guess.guess):
             user_who_guessed.add(guess.user_id)
 
         if guess.user_id not in guesses_by_user_id:
@@ -229,3 +245,30 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
         entry["index"] = index
 
     return {"leaderboard": sorted_leaderboard}, 200
+
+
+# temporary endpoints
+@game_bp.route("/admin/migrate/game", methods=["POST"])
+@require_auth(require_admin_role=True)
+def migrate_games() -> tuple[dict[str, Any], int]:
+    game_repository = make_game_repository()
+    deprecated_game_repository = make_deprecated_game_repository()
+
+    old_game_by_word = {
+        game.word: game for game in deprecated_game_repository.get_games()
+    }
+    new_game_by_word = {game.word: game for game in game_repository.get_games()}
+
+    migrated_games: list[str] = []
+    for word, old_game in old_game_by_word.items():
+        if word not in new_game_by_word:
+            created_game = game_repository.add_game(
+                word, start_date=old_game.start_date
+            )
+            game_repository.lock_game(created_game.id)
+            migrated_games.append(word)
+
+    return {
+        "migrated_games": migrated_games,
+        "count": len(migrated_games),
+    }, 200

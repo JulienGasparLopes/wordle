@@ -14,10 +14,11 @@ export default function AllGames({ allGames }: any) {
 }
 
 const GameLine = ({ game }: any) => {
+  const color = game.locked ? "gray-400" : "white";
   return (
     <div className="flex gap-8">
       <div
-        className="border-solid border-white border rounded-md flex p-2 px-4 gap-8"
+        className={`border-solid border-${color} border rounded-md flex p-2 px-4 gap-8 text-${color}`}
         onClick={() => redirect(`/game/${game.id}`)}
       >
         <GameState state={game.state} />

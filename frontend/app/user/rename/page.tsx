@@ -1,4 +1,4 @@
-import { loginAction } from "./actions";
+import { renameAction } from "./actions";
 
 const Login = () => {
   return (
@@ -6,7 +6,7 @@ const Login = () => {
       <h1>Select a pseudo</h1>
       <form>
         <input className="text-black" type="text" name="pseudo" />
-        <button formAction={loginAction}>Login</button>
+        <button formAction={renameAction}>Validate</button>
       </form>
     </div>
   );

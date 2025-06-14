@@ -6,6 +6,9 @@ interface Guess {
 
 interface GuessState {
     error: string | null;
+    gameId: number;
+    wordLength: number;
+    locked: boolean;
     guesses: Guess[];
 }
 
@@ -13,4 +16,5 @@ interface Game {
     id: number;
     wordLength: number;
     guesses: Guess[];
+    locked: boolean;
 }

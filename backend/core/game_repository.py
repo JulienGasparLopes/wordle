@@ -1,12 +1,13 @@
 from typing import Protocol
 from backend.core.type_defs import Game, Guess, GuessHint, UserId
 import datetime
-from backend.core.database import Database
+from backend.database.database import Database
+from backend.database.model import Game as GameModel, Guess as GuessModel
+from backend.database.model.guess import DeprecatedGuess as DeprecatedGuessModel
+from backend.database.model.game import DeprecatedGame as DeprecatedGameModel
 
 
 class GameRepositoryPort(Protocol):
-    def init_repository(self) -> None: ...
-
     def get_game(self, game_id: int) -> Game: ...
 
     def get_game_at_datetime(self, game_datetime: datetime.datetime) -> Game: ...
@@ -17,7 +18,7 @@ class GameRepositoryPort(Protocol):
         pagination: tuple[int, int] | None = None,
     ) -> list[Game]: ...
 
-    def add_game(self, word: str) -> Game: ...
+    def add_game(self, word: str, start_date: datetime.datetime) -> Game: ...
 
     def get_guesses(
         self, *, game_id: int, user_id: UserId | None = None
@@ -25,59 +26,28 @@ class GameRepositoryPort(Protocol):
 
     def add_guess(self, guess: Guess) -> None: ...
 
+    def lock_game(self, game_id: int) -> None: ...
 
-class GameRepository:
+    def unlock_game(self, game_id: int) -> None: ...
+
+
+class GameRepository(GameRepositoryPort):
     def __init__(self, database: Database) -> None:
         self._database = database
 
-    def init_repository(self) -> None:
-        self._database.execute(
-            """CREATE TABLE IF NOT EXISTS games (
-                id INTEGER PRIMARY KEY,
-                word TEXT UNIQUE,
-                start_date DATETIME
-            )
-            """
-        )
-        self._database.execute(
-            """CREATE TABLE IF NOT EXISTS guesses (
-                id INTEGER PRIMARY KEY,
-                game_id INTERGER,
-                user_id INTERGER,
-                word TEXT,
-                guess_date DATETIME,
-                clues TEXT,
-                FOREIGN KEY(game_id) REFERENCES games(id),
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            )
-            """
-        )
-        self._database.commit()
-
-    def _db_values_to_game(self, raw_game: tuple) -> Game:
-        return Game(
-            id=raw_game[0],
-            word=raw_game[1],
-            start_date=datetime.datetime.strptime(raw_game[2], "%Y-%m-%d %H:%M:%S.%f"),
-        )
-
-    def _db_values_to_guess(self, raw_guess: tuple) -> Guess:
-        return Guess(
-            id=raw_guess[0],
-            game_id=raw_guess[1],
-            user_id=raw_guess[2],
-            guess=raw_guess[3],
-            guess_date=datetime.datetime.strptime(raw_guess[4], "%Y-%m-%d %H:%M:%S.%f"),
-            clues=[GuessHint(int(clue)) for clue in raw_guess[5].split(",")],
-        )
-
     def get_game(self, game_id: int) -> Game:
-        raw_game = self._database.query_one("games", game_id)
-        return self._db_values_to_game(raw_game)
+        with self._database.get_session() as session:
+            raw_game = session.get(GameModel, game_id)
+
+        return Game(
+            id=raw_game.id,
+            word=raw_game.word,
+            start_date=raw_game.start_date,
+            locked=raw_game.locked,
+        )
 
     def get_game_at_datetime(self, game_datetime: datetime.datetime) -> Game:
-        all_games_raw = self._database.query_all("games")
-        all_games = [self._db_values_to_game(game) for game in all_games_raw]
+        all_games = self.get_games()
         return max(
             [game for game in all_games if game.start_date <= game_datetime],
             key=lambda game: game.start_date,
@@ -88,51 +58,135 @@ class GameRepository:
         date_range: tuple[datetime.datetime, datetime.datetime] | None = None,
         pagination: tuple[int, int] | None = None,
     ) -> list[Game]:
-        all_games_raw = self._database.query_all("games")
-        all_games = [self._db_values_to_game(game) for game in all_games_raw]
-        if date_range is not None:
-            start_date, end_date = date_range
-            return [
-                game for game in all_games if start_date <= game.start_date <= end_date
-            ]
-        if pagination is not None:
-            number_per_page, page_offset = pagination
-            start = page_offset * number_per_page
-            end = start + number_per_page
-            return all_games[start:end]
-        return all_games
-        # TODO add frontend pagination
-        # raise ValueError("Must provide date_range or pagination")
+        with self._database.get_session() as session:
+            raw_games = session.query(GameModel).all()
 
-    def add_game(self, word: str) -> Game:
-        self._database.execute(
-            "INSERT INTO games (word, start_date) VALUES (?, ?)",
-            (word, datetime.datetime.now()),
+        return [
+            Game(
+                id=game.id,
+                word=game.word,
+                start_date=game.start_date,
+                locked=game.locked,
+            )
+            for game in raw_games
+        ]
+
+    def add_game(self, word: str, start_date: datetime.datetime) -> Game:
+        with self._database.get_session() as session:
+            new_game = GameModel(
+                word=word,
+                start_date=start_date,
+                locked=False,
+            )
+            session.add(new_game)
+            session.commit()
+            session.refresh(new_game)
+
+        return Game(
+            id=new_game.id,
+            word=new_game.word,
+            start_date=new_game.start_date,
+            locked=new_game.locked,
         )
-        self._database.commit()
-        game_id = self._database.get_last_row_id()
-        return self.get_game(game_id)
 
     def get_guesses(
         self, *, game_id: int, user_id: UserId | None = None
     ) -> list[Guess]:
-        if user_id is None:
-            self._database.execute(
-                "SELECT * FROM guesses WHERE game_id = ?",
-                (game_id,),
+        with self._database.get_session() as session:
+            query = session.query(GuessModel).filter(GuessModel.game_id == game_id)
+            if user_id is not None:
+                query = query.filter(GuessModel.user_id == user_id)
+
+            raw_guesses = query.all()
+
+        return [
+            Guess(
+                id=guess.id,
+                user_id=guess.user_id,
+                game_id=guess.game_id,
+                guess=guess.word,
+                guess_date=guess.guess_date,
+                hints=[GuessHint(int(clue)) for clue in guess.hints.split(",")],
             )
-        else:
-            self._database.execute(
-                "SELECT * FROM guesses WHERE user_id = ? AND game_id = ?",
-                (user_id, game_id),
-            )
-        raw_guesses = self._database.fetch_all()
-        return [self._db_values_to_guess(guess) for guess in raw_guesses]
+            for guess in raw_guesses
+        ]
 
     def add_guess(self, guess: Guess) -> None:
-        clues = ",".join([str(clue.value) for clue in guess.clues])
-        self._database.execute(
-            "INSERT INTO guesses (game_id, user_id, word, guess_date, clues) VALUES (?, ?, ?, ?, ?)",
-            (guess.game_id, guess.user_id, guess.guess, guess.guess_date, clues),
-        )
-        self._database.commit()
+        with self._database.get_session() as session:
+            new_guess = GuessModel(
+                game_id=guess.game_id,
+                user_id=guess.user_id,
+                word=guess.guess,
+                guess_date=guess.guess_date,
+                hints=",".join([str(clue.value) for clue in guess.hints]),
+            )
+            session.add(new_guess)
+            session.commit()
+
+    def lock_game(self, game_id: int) -> None:
+        with self._database.get_session() as session:
+            game = session.get(GameModel, game_id)
+            if game:
+                game.locked = True
+                session.commit()
+
+    def unlock_game(self, game_id: int) -> None:
+        with self._database.get_session() as session:
+            game = session.get(GameModel, game_id)
+            if game:
+                game.locked = False
+                session.commit()
+
+
+class DeprecatedGameRepository(GameRepositoryPort):
+    def __init__(self, database: Database) -> None:
+        self._database = database
+
+    def get_games(
+        self,
+        date_range: tuple[datetime.datetime, datetime.datetime] | None = None,
+        pagination: tuple[int, int] | None = None,
+    ) -> list[Game]:
+        with self._database.get_session() as session:
+            raw_games = session.query(DeprecatedGameModel).all()
+
+        return [
+            Game(id=game.id, word=game.word, start_date=game.start_date, locked=False)
+            for game in raw_games
+        ]
+
+    def get_guesses(
+        self, *, game_id: int, user_id: UserId | None = None
+    ) -> list[Guess]:
+        with self._database.get_session() as session:
+            query = session.query(DeprecatedGuessModel).filter(
+                DeprecatedGuessModel.game_id == game_id
+            )
+            if user_id is not None:
+                query = query.filter(DeprecatedGuessModel.user_id == user_id)
+
+            raw_guesses = query.all()
+
+        return [
+            Guess(
+                id=guess.id,
+                user_id=guess.user_id,
+                game_id=guess.game_id,
+                guess=guess.word,
+                guess_date=guess.guess_date,
+                hints=[GuessHint(int(clue)) for clue in guess.clues.split(",")],
+            )
+            for guess in raw_guesses
+        ]
+
+    def get_game(self, game_id: int) -> Game: ...
+
+    def get_game_at_datetime(self, game_datetime: datetime.datetime) -> Game: ...
+
+    def add_game(self, word: str, start_date: datetime.datetime) -> Game: ...
+
+    def add_guess(self, guess: Guess) -> None: ...
+
+    def lock_game(self, game_id: int) -> None: ...
+
+    def unlock_game(self, game_id: int) -> None: ...

@@ -11,7 +11,7 @@ GuessId = int
 class User:
     id: UserId
     pseudo: str
-    formatted_pseudo: str
+    is_admin: bool
 
 
 @dataclass
@@ -20,6 +20,8 @@ class Game:
 
     word: str
     start_date: datetime.datetime
+
+    locked: bool
 
 
 class GuessHint(Enum):
@@ -35,4 +37,4 @@ class Guess:
     game_id: GameId
     guess: str
     guess_date: datetime.datetime
-    clues: list[GuessHint]
+    hints: list[GuessHint]
