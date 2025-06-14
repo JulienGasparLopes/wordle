@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next -p 8080",
-    "build": "next build",
+    "build": "cross-env NODE_ENV=production next build",
     "start": "cross-env NODE_ENV=production next start -p 8080",
     "lint": "next lint"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.6.0",
+    "cross-env": "^7.0.3",
     "next": "15.2.3",
     "react": "19.0.0",
     "react-dom": "19.0.0"
