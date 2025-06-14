@@ -22,9 +22,9 @@ export const migrateUser = async (formData: FormData) => {
             headers: await getHeaders(),
         });
         if (response.ok) {
-            redirect("/admin");
-        } else {
             redirect("/");
+        } else {
+            redirect("/admin");
         }
     }
 }

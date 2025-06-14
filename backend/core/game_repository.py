@@ -18,7 +18,7 @@ class GameRepositoryPort(Protocol):
         pagination: tuple[int, int] | None = None,
     ) -> list[Game]: ...
 
-    def add_game(self, word: str) -> Game: ...
+    def add_game(self, word: str, start_date: datetime.datetime) -> Game: ...
 
     def get_guesses(
         self, *, game_id: int, user_id: UserId | None = None
@@ -71,11 +71,11 @@ class GameRepository(GameRepositoryPort):
             for game in raw_games
         ]
 
-    def add_game(self, word: str) -> Game:
+    def add_game(self, word: str, start_date: datetime.datetime) -> Game:
         with self._database.get_session() as session:
             new_game = GameModel(
                 word=word,
-                start_date=datetime.datetime.now(),
+                start_date=start_date,
                 locked=False,
             )
             session.add(new_game)
@@ -183,7 +183,7 @@ class DeprecatedGameRepository(GameRepositoryPort):
 
     def get_game_at_datetime(self, game_datetime: datetime.datetime) -> Game: ...
 
-    def add_game(self, word: str) -> Game: ...
+    def add_game(self, word: str, start_date: datetime.datetime) -> Game: ...
 
     def add_guess(self, guess: Guess) -> None: ...
 

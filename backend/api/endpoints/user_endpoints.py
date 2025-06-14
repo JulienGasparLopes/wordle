@@ -101,8 +101,6 @@ def post_migrate_user() -> tuple[dict[str, Any], int]:
     try:
         payload: MigrateUserPayload = MigrateUserPayload.model_validate(request.json)
 
-        print(payload)
-
         deprecated_user_repository = make_deprecated_user_repository()
 
         game_repository = make_game_repository()
@@ -135,5 +133,4 @@ def post_migrate_user() -> tuple[dict[str, Any], int]:
         return {"status": "ok"}, 200
 
     except Exception as e:
-        print(f"Error during user migration: {e}")
         return {"error": str(e)}, 400

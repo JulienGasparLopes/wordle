@@ -208,7 +208,7 @@ def post_new_game() -> tuple[dict[str, Any], int]:
         if len(new_word) == len({letter for letter in new_word}):
             break
 
-    game_repository.add_game(new_word)
+    game_repository.add_game(new_word, start_date=datetime.now())
     return {"word": new_word}, 200
 
 
@@ -262,7 +262,9 @@ def migrate_games() -> tuple[dict[str, Any], int]:
     migrated_games: list[str] = []
     for word, old_game in old_game_by_word.items():
         if word not in new_game_by_word:
-            created_game = game_repository.add_game(word)
+            created_game = game_repository.add_game(
+                word, start_date=old_game.start_date
+            )
             game_repository.lock_game(created_game.id)
             migrated_games.append(word)
 
