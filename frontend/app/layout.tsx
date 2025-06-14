@@ -35,7 +35,7 @@ const RootLayout = async ({
                 <h2 className="text-4xl font-bold mb-8">{userInfo?.pseudo}</h2>
                 <div className="flex gap-8">
                   <Link href="/user/rename">Rename</Link>
-                  <Link href="/auth/logout">Logout</Link>
+                  <a href="/auth/logout">Logout</a>
                 </div>
               </>
             }
