@@ -12,6 +12,7 @@ export const fetchGame = async (gameId: number) => {
     return {
         id: result.game_id,
         wordLength: result.word_length,
+        locked: result.locked,
         guesses: result.guesses.map((guess: { word: string, hints: [number], right_answer: boolean }) => ({
             word: guess.word,
             hints: guess.hints,
@@ -31,6 +32,7 @@ export const sendGuess = async (prevState: GuessState, formData: FormData) => {
     if (result.ok) {
         const new_guess = await result.json()
         return {
+            ...prevState,
             error: null,
             guesses: [...prevState.guesses, new_guess]
         }
@@ -38,6 +40,7 @@ export const sendGuess = async (prevState: GuessState, formData: FormData) => {
     else {
         const response = await result.json()
         return {
+            ...prevState,
             error: response.error,
             guesses: prevState.guesses
         }

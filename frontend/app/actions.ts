@@ -23,9 +23,10 @@ export const fetchAllGames = async () => {
         headers: await getHeaders()
     },);
     const results_raw = await result_raw.json()
-    const results = results_raw.games.map((result: { game_id: number, word_length: number, start_date: string, state: string }) => ({
+    const results = results_raw.games.map((result: { game_id: number, word_length: number, start_date: string, state: string, locked: boolean }) => ({
         id: result.game_id,
         wordLength: result.word_length,
+        locked: result.locked,
         date: result.start_date,
         state: result.state,
     }));

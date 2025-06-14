@@ -21,6 +21,8 @@ class Game:
     word: str
     start_date: datetime.datetime
 
+    locked: bool
+
 
 class GuessHint(Enum):
     CORRECT = 0

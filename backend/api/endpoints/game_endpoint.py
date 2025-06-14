@@ -1,7 +1,11 @@
 from datetime import datetime
 from typing import Any, Literal
 
-from backend.core import make_game_repository, make_user_repository
+from backend.core import (
+    make_deprecated_game_repository,
+    make_game_repository,
+    make_user_repository,
+)
 from backend.core.type_defs import Guess, GuessHint
 from backend.core.word_service import WordService, WordServiceport
 from flask import Blueprint, request, g
@@ -15,6 +19,7 @@ class Game(BaseModel):
     game_id: int
     word_length: int
     start_date: datetime
+    locked: bool
 
 
 class GameInfo(Game):
@@ -33,7 +38,7 @@ def get_game_list() -> tuple[str, int]:
     game_repository = make_game_repository()
     games = game_repository.get_games()  # TODO add pagination=(10, 0)
 
-    formatted_games: list[Game] = []
+    formatted_games: list[GameInfo] = []
     for game in games:
         user_guesses = game_repository.get_guesses(game_id=game.id, user_id=user_id)
         if not user_guesses:
@@ -52,6 +57,7 @@ def get_game_list() -> tuple[str, int]:
                 word_length=len(game.word),
                 start_date=game.start_date,
                 state=state,
+                locked=game.locked,
             )
         )
 
@@ -71,6 +77,7 @@ class GameResponse(BaseModel):
     game_id: int
     word_length: int
     start_date: datetime
+    locked: bool
 
     guesses: list[GameGuessesResponse]
 
@@ -89,6 +96,7 @@ def get_game(game_id: str) -> tuple[str, int]:
         game_id=game.id,
         word_length=len(game.word),
         start_date=game.start_date,
+        locked=game.locked,
         guesses=[
             GameGuessesResponse(
                 word=guess.guess,
@@ -113,6 +121,7 @@ def get_current_game() -> tuple[str, int]:
         game_id=current_game.id,
         word_length=len(current_game.word),
         start_date=current_game.start_date.isoformat(),
+        locked=current_game.locked,
     )
 
     return response_object.model_dump_json(), 200
@@ -136,9 +145,13 @@ def post_guess(game_id: str) -> tuple[dict[str, Any], int]:
     word_service: WordServiceport = WordService()
     game_repository = make_game_repository()
 
+    game = game_repository.get_game(game_id=int(game_id))
+
+    if game.locked:
+        return {"error": "Game is locked"}, 403
+
     add_guest_payload = AddGuessPayload.model_validate(request.json)
     word_guess = add_guest_payload.guess.lower()
-    game = game_repository.get_game(game_id=int(game_id))
     guesses = game_repository.get_guesses(game_id=game.id, user_id=user_id)
 
     if any(guess.guess == game.word for guess in guesses):
@@ -232,3 +245,28 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
         entry["index"] = index
 
     return {"leaderboard": sorted_leaderboard}, 200
+
+
+# temporary endpoints
+@game_bp.route("/admin/migrate/game", methods=["POST"])
+@require_auth(require_admin_role=True)
+def migrate_games() -> tuple[dict[str, Any], int]:
+    game_repository = make_game_repository()
+    deprecated_game_repository = make_deprecated_game_repository()
+
+    old_game_by_word = {
+        game.word: game for game in deprecated_game_repository.get_games()
+    }
+    new_game_by_word = {game.word: game for game in game_repository.get_games()}
+
+    migrated_games: list[str] = []
+    for word, old_game in old_game_by_word.items():
+        if word not in new_game_by_word:
+            created_game = game_repository.add_game(word)
+            game_repository.lock_game(created_game.id)
+            migrated_games.append(word)
+
+    return {
+        "migrated_games": migrated_games,
+        "count": len(migrated_games),
+    }, 200

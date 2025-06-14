@@ -1,6 +1,12 @@
 from typing import Any
 from backend.api.validator import require_auth
-from backend.core import make_deprecated_user_repository, make_user_repository
+from backend.core import (
+    make_deprecated_game_repository,
+    make_deprecated_user_repository,
+    make_game_repository,
+    make_user_repository,
+)
+from backend.core.type_defs import Guess
 from flask import Blueprint, g, request
 from pydantic import BaseModel
 
@@ -59,7 +65,7 @@ class UserMigrationAvailableUsersPayload(BaseModel):
     old_users: list[UserInfoMigrationPayload]
 
 
-@user_bp.route("/admin/user/migration", methods=["GET"])
+@user_bp.route("/admin/migrate/user", methods=["GET"])
 @require_auth(require_admin_role=True)
 def get_user_migration_info() -> tuple[dict[str, Any], int]:
     user_repository = make_user_repository()
@@ -82,3 +88,52 @@ def get_user_migration_info() -> tuple[dict[str, Any], int]:
     )
 
     return payload.model_dump(), 200
+
+
+class MigrateUserPayload(BaseModel):
+    new_user_id: int
+    old_user_id: int
+
+
+@user_bp.route("/admin/migrate/user", methods=["POST"])
+@require_auth(require_admin_role=True)
+def post_migrate_user() -> tuple[dict[str, Any], int]:
+    try:
+        payload: MigrateUserPayload = MigrateUserPayload.model_validate(request.json)
+
+        print(payload)
+
+        deprecated_user_repository = make_deprecated_user_repository()
+
+        game_repository = make_game_repository()
+        deprecated_game_repository = make_deprecated_game_repository()
+
+        old_game_by_word = {
+            game.word: game for game in deprecated_game_repository.get_games()
+        }
+        new_game_by_word = {game.word: game for game in game_repository.get_games()}
+
+        for world, old_game in old_game_by_word.items():
+            old_guesses = deprecated_game_repository.get_guesses(
+                game_id=old_game.id, user_id=payload.old_user_id
+            )
+
+            for old_guess in old_guesses:
+                game_repository.add_guess(
+                    Guess(
+                        id=-1,
+                        user_id=payload.new_user_id,
+                        game_id=new_game_by_word[world].id,
+                        guess=old_guess.guess,
+                        guess_date=old_guess.guess_date,
+                        hints=old_guess.hints,
+                    )
+                )
+
+        deprecated_user_repository.delete_user(payload.old_user_id)
+
+        return {"status": "ok"}, 200
+
+    except Exception as e:
+        print(f"Error during user migration: {e}")
+        return {"error": str(e)}, 400

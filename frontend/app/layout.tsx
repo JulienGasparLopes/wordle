@@ -1,7 +1,7 @@
 import localFont from "next/font/local";
 import "./globals.css";
-import { fetchUserInfo, redirectToAllGames } from "./actions";
-import { auth0 } from "@/lib/auth0";
+import { fetchUserInfo } from "./actions";
+import Link from "next/link";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,14 +28,14 @@ const RootLayout = async ({
           <div className="flex justify-between w-full">
             {
               <>
-                {/* <button className="text-white" formAction={redirectToAllGames}>
-                    Home
-                  </button> */}
-                <a href="/">Home</a>
+                <div className="flex gap-8">
+                  <Link href="/">Home</Link>
+                  {userInfo?.is_admin && <Link href="/admin">Admin</Link>}
+                </div>
                 <h2 className="text-4xl font-bold mb-8">{userInfo?.pseudo}</h2>
                 <div className="flex gap-8">
-                  <a href="/user/rename">Rename</a>
-                  <a href="/auth/logout">Logout</a>
+                  <Link href="/user/rename">Rename</Link>
+                  <Link href="/auth/logout">Logout</Link>
                 </div>
               </>
             }

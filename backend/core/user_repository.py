@@ -4,6 +4,7 @@ from typing import Protocol
 from backend.database.database import Database
 from backend.core.type_defs import User, UserId
 from backend.database.model import User as UserModel
+from backend.database.model.guess import DeprecatedGuess
 from backend.database.model.user import DeprecatedUser as DeprecatedUserModel
 
 
@@ -20,6 +21,8 @@ class UserRepositoryPort(Protocol):
     def create_user(self, pseudo: str) -> User: ...
 
     def rename_user(self, user_id: UserId, new_pseudo: str) -> User: ...
+
+    def delete_user(self, user_id: UserId) -> None: ...
 
 
 class UserRepository(UserRepositoryPort):
@@ -69,6 +72,11 @@ class UserRepository(UserRepositoryPort):
             session.commit()
         return self.get_user(user_id)
 
+    def delete_user(self, user_id: UserId) -> None:
+        raise NotImplementedError(
+            "User deletion is not implemented in the new repository."
+        )
+
 
 class DeprecatedUserRepository(UserRepositoryPort):
     def __init__(self, database: Database) -> None:
@@ -88,3 +96,14 @@ class DeprecatedUserRepository(UserRepositoryPort):
     def create_user(self, pseudo: str) -> User: ...
 
     def rename_user(self, user_id: UserId, new_pseudo: str) -> User: ...
+
+    def delete_user(self, user_id: UserId) -> None:
+        with self._database.get_session() as session:
+            user = session.get(DeprecatedUserModel, user_id)
+            if not user:
+                raise UnfoundUserError(f"User with ID {user_id} not found.")
+            session.query(DeprecatedGuess).filter(
+                DeprecatedGuess.user_id == user_id
+            ).delete()
+            session.delete(user)
+            session.commit()

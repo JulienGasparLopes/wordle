@@ -1,4 +1,8 @@
-from backend.core.game_repository import GameRepository, GameRepositoryPort
+from backend.core.game_repository import (
+    DeprecatedGameRepository,
+    GameRepository,
+    GameRepositoryPort,
+)
 from backend.core.user_repository import (
     DeprecatedUserRepository,
     UserRepository,
@@ -17,3 +21,7 @@ def make_deprecated_user_repository() -> UserRepositoryPort:
 
 def make_game_repository() -> GameRepositoryPort:
     return GameRepository(database.database)
+
+
+def make_deprecated_game_repository() -> GameRepositoryPort:
+    return DeprecatedGameRepository(database.database)
