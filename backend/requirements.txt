@@ -7,3 +7,4 @@ gunicorn==23.0.0
 Authlib==1.6.0
 python-jose==3.5.0
 sqlalchemy==2.0.41
+requests==2.32.4
