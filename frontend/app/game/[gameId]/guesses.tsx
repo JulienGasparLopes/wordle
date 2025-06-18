@@ -3,6 +3,13 @@
 import React, { useEffect } from "react";
 import { sendGuess } from "./actions";
 
+const ALL_LETTERS = "abcdefghijklmnopqrstuvwxyz";
+
+const COLOR_NEUTRAL = "bg-gray-400";
+const COLOR_CORRECT = "bg-green-600";
+const COLOR_PRESENT = "bg-orange-500";
+const COLOR_ABSENT = "bg-red-600";
+
 export default function Guesses({ game }: { game: Game }) {
   const [state, formAction] = React.useActionState<GuessState, any>(sendGuess, {
     error: null,
@@ -12,20 +19,27 @@ export default function Guesses({ game }: { game: Game }) {
     guesses: game.guesses,
   });
 
+  const letterToHint = React.useMemo(() => {
+    const result: { [letter: string]: number } = {};
+    state.guesses.forEach((guess: Guess) => {
+      guess.word.split("").forEach((letter: string, index: number) => {
+        if (result[letter] === undefined || result[letter] > guess.hints[index]) {
+          result[letter] = guess.hints[index];
+        }
+      });
+    });
+    return result;
+  }, [state.guesses]);
+
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   return (
-    <div className="mx-auto w-1/2 h-full grid grid-rows-[2fr_1fr] gap-8 justify-items-center justify-center">
+    <div className="mx-auto w-1/2 h-9/10 grid grid-rows-[auto_auto_auto] gap-8 justify-items-center justify-center">
       <div ref={scrollRef} className="overflow-y-scroll" style={{ scrollbarColor: "white black" }}>
         {state.guesses.map((guess: Guess, index: number) => (
           <div className="flex gap-1 mb-1" key={index}>
             {guess.word.split("").map((letter: string, letter_index: number) => {
-              const color =
-                guess.hints[letter_index] === 0
-                  ? "bg-green-600"
-                  : guess.hints[letter_index] === 1
-                  ? "bg-orange-500"
-                  : "bg-red-600";
+              const color = hintToColor(guess.hints[letter_index]);
               return <LetterCell letter={letter} color={color} key={letter_index} />;
             })}
           </div>
@@ -34,7 +48,10 @@ export default function Guesses({ game }: { game: Game }) {
       {!!state.locked ? (
         <div className="text-gray-400 w-48 text-center">Game is locked</div>
       ) : (
-        <GuessSelector state={state} formAction={formAction} scrollRef={scrollRef} />
+        <>
+          <GuessSelector state={state} formAction={formAction} scrollRef={scrollRef} />
+          <LetterStateIndicator letterToHint={letterToHint} />
+        </>
       )}
     </div>
   );
@@ -91,7 +108,17 @@ const GuessSelector = ({ state, formAction, scrollRef }: { state: GuessState; fo
   );
 };
 
-const LetterCell = ({ letter, color, focused }: { letter: string; color: string; focused?: boolean }) => {
+const LetterStateIndicator = ({ letterToHint }: { letterToHint: { [letter: string]: number } }) => {
+  return (
+    <div className="flex flex-wrap gap-1 mt-4 justify-center">
+      {ALL_LETTERS.split("").map((letter) => (
+        <LetterCell key={letter} letter={letter} color={hintToColor(letterToHint[letter])}></LetterCell>
+      ))}
+    </div>
+  );
+};
+
+const LetterCell = ({ letter, color }: { letter: string; color: string }) => {
   return (
     <div className={`rounded-sm w-10 h-10 ${color} leading-5 justify-items-center justify-center flex items-center`}>
       <p className="text-xl">{letter}</p>
@@ -109,4 +136,17 @@ const LetterInput = ({ letter, focused, disabled }: { letter: string; focused: b
       <p className="text-xl">{letter}</p>
     </div>
   );
+};
+
+const hintToColor = (hint: number) => {
+  switch (hint) {
+    case 0:
+      return COLOR_CORRECT;
+    case 1:
+      return COLOR_PRESENT;
+    case 2:
+      return COLOR_ABSENT;
+    default:
+      return COLOR_NEUTRAL;
+  }
 };

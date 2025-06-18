@@ -9,5 +9,5 @@ Automate game creation using crontable and specific script
 ```
 crontab -e
 
-45 11 * * * cd <path/to/wordle/file> && source backend/.venv/bin/activate && python -m backend.automation.daily_game_creation > wordle.log
+45 9 * * 1-5 cd <path/to/wordle/file> && . backend/.venv/bin/activate && python -m backend.automation.daily_game_creation > wordle.log
 ```
