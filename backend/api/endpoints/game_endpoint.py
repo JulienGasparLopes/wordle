@@ -232,6 +232,7 @@ def get_game_leaderboard(game_id: str) -> tuple[dict[str, Any], int]:
     leaderboard = [
         {
             "user_pseudo": user_repository.get_user(user_id).pseudo,
+            "user_id": user_id,
             "guess_count": len(user_guesses),
             "win_date": user_guesses[0].guess_date.isoformat(),
         }
