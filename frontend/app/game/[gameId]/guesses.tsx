@@ -23,8 +23,9 @@ export default function Guesses({ game }: { game: Game }) {
     const result: { [letter: string]: number } = {};
     state.guesses.forEach((guess: Guess) => {
       guess.word.split("").forEach((letter: string, index: number) => {
-        if (result[letter] === undefined || result[letter] > guess.hints[index]) {
-          result[letter] = guess.hints[index];
+        const letter_lower = letter.toLowerCase();
+        if (result[letter_lower] === undefined || result[letter_lower] > guess.hints[index]) {
+          result[letter_lower] = guess.hints[index];
         }
       });
     });
