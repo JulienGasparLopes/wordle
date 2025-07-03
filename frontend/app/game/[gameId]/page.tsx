@@ -1,9 +1,9 @@
-import { fetchGame } from './actions'
-import Guesses from './guesses'
-import { Metadata } from 'next'
+import { fetchGame } from "./actions"
+import Guesses from "./guesses"
+import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: 'Game | Wordle',
+  title: "Game | Wordle",
 }
 
 export default async function Game({ params }: any) {

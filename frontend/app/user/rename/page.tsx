@@ -1,9 +1,9 @@
-import { Metadata } from 'next'
-import { renameAction } from './actions'
+import { Metadata } from "next"
+import { renameAction } from "./actions"
 
 export const metadata: Metadata = {
-  title: 'Rename',
-  description: 'Rename your username',
+  title: "Rename",
+  description: "Rename your username",
 }
 
 const RenamePage = () => {

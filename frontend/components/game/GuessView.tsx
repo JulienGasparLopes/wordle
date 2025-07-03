@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { GuessState } from '@/app/game/[gameId]/commons'
-import React, { useEffect } from 'react'
-import { LetterInput } from './LetterInput'
+import { GuessState } from "@/app/game/[gameId]/commons"
+import React, { useEffect } from "react"
+import { LetterInput } from "./LetterInput"
 
 export const GuessView = React.forwardRef(
   (
@@ -41,7 +41,7 @@ export const GuessView = React.forwardRef(
     }, [])
 
     useEffect(() => {
-      setCurrentValue('')
+      setCurrentValue("")
       scrollRef.current?.scrollTo(0, scrollRef.current?.scrollHeight)
     }, [state, scrollRef, setCurrentValue])
 
@@ -99,4 +99,4 @@ export const GuessView = React.forwardRef(
     )
   }
 )
-GuessView.displayName = 'GuessView'
+GuessView.displayName = "GuessView"

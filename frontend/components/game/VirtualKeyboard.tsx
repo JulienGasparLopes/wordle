@@ -1,9 +1,9 @@
-'use client'
+"use client"
 
-import { Eraser, Send, Trash2 } from 'lucide-react'
-import { LetterCell, hintToColor } from './LetterCell'
+import { Eraser, Send, Trash2 } from "lucide-react"
+import { LetterCell, hintToColor } from "./LetterCell"
 
-const ALL_LETTERS = 'abcdefghijklmnopqrstuvwxyz'
+const ALL_LETTERS = "abcdefghijklmnopqrstuvwxyz"
 
 export const VirtualKeyboard = ({
   letterToHint,
@@ -21,7 +21,7 @@ export const VirtualKeyboard = ({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-1 mt-4 justify-center select-none">
-        {ALL_LETTERS.split('').map((letter) => (
+        {ALL_LETTERS.split("").map((letter) => (
           <LetterCell
             key={letter}
             letter={letter}

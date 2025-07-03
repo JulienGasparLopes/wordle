@@ -1,7 +1,7 @@
-export const COLOR_NEUTRAL = 'bg-gray-400'
-export const COLOR_CORRECT = 'bg-green-600'
-export const COLOR_PRESENT = 'bg-orange-500'
-export const COLOR_ABSENT = 'bg-red-600'
+export const COLOR_NEUTRAL = "bg-gray-400"
+export const COLOR_CORRECT = "bg-green-600"
+export const COLOR_PRESENT = "bg-orange-500"
+export const COLOR_ABSENT = "bg-red-600"
 
 export interface Guess {
   word: string

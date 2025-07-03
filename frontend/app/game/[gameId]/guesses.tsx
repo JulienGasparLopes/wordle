@@ -1,11 +1,11 @@
-'use client'
+"use client"
 
-import { GuessView } from '@/components/game/GuessView'
-import { LetterCell, hintToColor } from '@/components/game/LetterCell'
-import { VirtualKeyboard } from '@/components/game/VirtualKeyboard'
-import React, { useEffect } from 'react'
-import { sendGuess } from './actions'
-import { Game, Guess, GuessState } from './commons'
+import { GuessView } from "@/components/game/GuessView"
+import { LetterCell, hintToColor } from "@/components/game/LetterCell"
+import { VirtualKeyboard } from "@/components/game/VirtualKeyboard"
+import React, { useEffect } from "react"
+import { sendGuess } from "./actions"
+import { Game, Guess, GuessState } from "./commons"
 
 export default function Guesses({ game }: { game: Game }) {
   const [state, formAction] = React.useActionState<GuessState, any>(sendGuess, {
@@ -16,7 +16,7 @@ export default function Guesses({ game }: { game: Game }) {
     guesses: game.guesses,
   })
 
-  const [currentValue, setCurrentValue] = React.useState('')
+  const [currentValue, setCurrentValue] = React.useState("")
   const guessSelectorRef = React.useRef<{ focusInput: () => void }>(null)
 
   const answerFound = React.useMemo(
@@ -29,7 +29,7 @@ export default function Guesses({ game }: { game: Game }) {
   const letterToHint = React.useMemo(() => {
     const result: { [letter: string]: number } = {}
     state.guesses.forEach((guess: Guess) => {
-      guess.word.split('').forEach((letter: string, index: number) => {
+      guess.word.split("").forEach((letter: string, index: number) => {
         const letterLower = letter.toLowerCase()
         if (
           result[letterLower] === undefined ||
@@ -57,7 +57,7 @@ export default function Guesses({ game }: { game: Game }) {
   }
 
   const handleClear = () => {
-    setCurrentValue('')
+    setCurrentValue("")
     setTimeout(() => guessSelectorRef.current?.focusInput(), 0)
   }
 
@@ -66,11 +66,11 @@ export default function Guesses({ game }: { game: Game }) {
       <div
         ref={scrollRef}
         className="overflow-y-scroll"
-        style={{ scrollbarColor: 'white black' }}
+        style={{ scrollbarColor: "white black" }}
       >
         {state.guesses.map((guess: Guess, index: number) => (
           <div className="flex gap-1 mb-1" key={index}>
-            {guess.word.split('').map((letter: string, letterIndex: number) => {
+            {guess.word.split("").map((letter: string, letterIndex: number) => {
               const color = hintToColor(guess.hints[letterIndex])
               return (
                 <LetterCell letter={letter} color={color} key={letterIndex} />

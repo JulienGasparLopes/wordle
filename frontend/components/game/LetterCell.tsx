@@ -1,11 +1,11 @@
-'use client'
+"use client"
 
 import {
   COLOR_ABSENT,
   COLOR_CORRECT,
   COLOR_NEUTRAL,
   COLOR_PRESENT,
-} from '@/app/game/[gameId]/commons'
+} from "@/app/game/[gameId]/commons"
 
 export const hintToColor = (hint: number) => {
   switch (hint) {
@@ -33,7 +33,7 @@ export const LetterCell = ({
     <div
       onClick={onClick}
       className={`rounded-sm w-10 h-10 ${color} leading-5 justify-items-center justify-center flex items-center ${
-        onClick ? 'cursor-pointer' : ''
+        onClick ? "cursor-pointer" : ""
       }`}
     >
       <p className="text-xl">{letter}</p>

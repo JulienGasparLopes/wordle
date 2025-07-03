@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { redirect } from 'next/navigation'
-import { userFormatDate } from './helpers'
-import { Trophy } from 'lucide-react'
+import { redirect } from "next/navigation"
+import { userFormatDate } from "./helpers"
+import { Trophy } from "lucide-react"
 
 export default function AllGames({ allGames }: any) {
   return (
@@ -16,7 +16,7 @@ export default function AllGames({ allGames }: any) {
 }
 
 const GameLine = ({ game }: any) => {
-  const color = game.locked ? 'gray-400' : 'white'
+  const color = game.locked ? "gray-400" : "white"
   return (
     <div
       className={`border-solid border-${color} border rounded-md flex flex-col p-4 gap-4 text-${color}`}
@@ -44,10 +44,10 @@ const GameLine = ({ game }: any) => {
 
 const GameState = ({ state }: { state: string }) => {
   const color =
-    state === 'NOT_STARTED'
-      ? 'bg-gray-500'
-      : state === 'IN_PROGRESS'
-      ? 'bg-yellow-500'
-      : 'bg-green-500'
+    state === "NOT_STARTED"
+      ? "bg-gray-500"
+      : state === "IN_PROGRESS"
+        ? "bg-yellow-500"
+        : "bg-green-500"
   return <div className={`w-6 h-6 rounded-full ${color}`}></div>
 }

@@ -1,8 +1,8 @@
-'use server'
+"use server"
 
-import { fetchUserInfo } from '@/app/actions'
-import { Home, LogOut, Pencil, Shield } from 'lucide-react'
-import Link from 'next/link'
+import { fetchUserInfo } from "@/app/actions"
+import { Home, LogOut, Pencil, Shield } from "lucide-react"
+import Link from "next/link"
 
 export default async function Header() {
   const userInfo = await fetchUserInfo()
