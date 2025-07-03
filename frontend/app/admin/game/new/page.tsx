@@ -1,4 +1,4 @@
-import { createNewGame } from "./actions";
+import { createNewGame } from "./actions"
 
 export default async function Game({ params }: any) {
   return (
@@ -11,5 +11,5 @@ export default async function Game({ params }: any) {
         <button type="submit">Create New Game</button>
       </div>
     </form>
-  );
+  )
 }
