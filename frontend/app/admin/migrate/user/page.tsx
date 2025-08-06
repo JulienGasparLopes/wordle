@@ -1,7 +1,7 @@
-import { getUserInformation, migrateUser } from "./actions";
+import { getUserInformation, migrateUser } from "./actions"
 
 export default async function UserMigration() {
-  const userInformation = await getUserInformation();
+  const userInformation = await getUserInformation()
 
   return (
     <form>
@@ -15,7 +15,7 @@ export default async function UserMigration() {
                 <option key={element.id} value={element.id}>
                   {element.pseudo} - {element.id}
                 </option>
-              );
+              )
             })}
           </select>
         </div>
@@ -28,12 +28,12 @@ export default async function UserMigration() {
                 <option key={element.id} value={element.id}>
                   {element.pseudo} - {element.id}
                 </option>
-              );
+              )
             })}
           </select>
         </div>
       </div>
       <button formAction={migrateUser}>Migrate User</button>
     </form>
-  );
+  )
 }
