@@ -30,13 +30,14 @@ export default async function Header() {
         >
           <Pencil size={20} />
         </Link>
-        <Link
+        {/** DO NOT USE <Link/> ! Auth can't work unless using <a/> */}
+        <a
           href="/auth/logout"
           title="Logout"
           className="bg-red-500 text-white rounded-md p-2 hover:text-white hover:bg-red-600"
         >
           <LogOut size={20} />
-        </Link>
+        </a>
       </div>
     </div>
   )
