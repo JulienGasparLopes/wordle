@@ -3,12 +3,9 @@
 This is a simple wordle game.
 
 ## Installation and running
+
 - [Backend](./backend/README.md)
 - [Frontend](./frontend/README.md)
-
-## Environment variables
-
-You can copy the `.env.example` file and rename it to `.env` to get started. For Auth0 variables, you can use the following guide to setup Auth0.
 
 ## Setup Auth0
 

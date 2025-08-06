@@ -6,11 +6,13 @@ import { Trophy } from "lucide-react"
 
 export default function AllGames({ allGames }: any) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 h-full">
       <h1 className="text-2xl font-bold text-center">All games</h1>
-      {allGames.map((game: any) => (
-        <GameLine game={game} key={game.id} />
-      ))}
+      <div className="overflow-y-scroll no-scrollbar">
+        {allGames.map((game: any) => (
+          <GameLine game={game} key={game.id} />
+        ))}
+      </div>
     </div>
   )
 }
@@ -19,7 +21,7 @@ const GameLine = ({ game }: any) => {
   const color = game.locked ? "gray-400" : "white"
   return (
     <div
-      className={`border-solid border-${color} border rounded-md flex flex-col p-4 gap-4 text-${color}`}
+      className={`border-solid border-${color} border rounded-md flex p-4 gap-4 text-${color}`}
     >
       <div
         className="flex gap-8 items-center cursor-pointer"

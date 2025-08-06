@@ -1,6 +1,6 @@
 import localFont from "next/font/local"
 import "./globals.css"
-import Header from "@/components/shared/Header"
+import Header from "@/components/shared/header"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -21,11 +21,11 @@ const RootLayout = async ({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full bg-black text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full bg-black text-white overflow-hidden`}
       >
-        <div className="h-full p-8 grid grid-rows-[70px_auto] justify-items-center">
+        <div className="h-full px-8 grid grid-rows-[70px_auto] justify-items-center overflow-hidden">
           <Header />
-          <div className="h-full">{children}</div>
+          <div className="h-full overflow-hidden">{children}</div>
         </div>
       </body>
     </html>

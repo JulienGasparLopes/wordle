@@ -1,6 +1,7 @@
 "use server"
 
 import { getHeaders } from "@/app/connection"
+import { GuessState } from "./commons"
 
 export const fetchGame = async (gameId: number) => {
   const result_raw = await fetch(`http://localhost:5001/game/${gameId}`, {

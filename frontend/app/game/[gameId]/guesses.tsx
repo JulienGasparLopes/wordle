@@ -3,7 +3,7 @@
 import { GuessView } from "@/components/game/GuessView"
 import { LetterCell, hintToColor } from "@/components/game/LetterCell"
 import { VirtualKeyboard } from "@/components/game/VirtualKeyboard"
-import React, { useEffect } from "react"
+import React from "react"
 import { sendGuess } from "./actions"
 import { Game, Guess, GuessState } from "./commons"
 
@@ -62,10 +62,10 @@ export default function Guesses({ game }: { game: Game }) {
   }
 
   return (
-    <div className="mx-auto w-1/2 h-9/10 grid grid-rows-[auto_auto_auto] gap-8 justify-items-center justify-center">
+    <div className="mx-auto w-1/2 h-9/10 grid grid-rows-[auto_auto_auto] gap-8 justify-items-center justify-center overflow-hidden h-full">
       <div
         ref={scrollRef}
-        className="overflow-y-scroll"
+        className="overflow-y-scroll h-full"
         style={{ scrollbarColor: "white black" }}
       >
         {state.guesses.map((guess: Guess, index: number) => (

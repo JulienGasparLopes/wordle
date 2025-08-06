@@ -16,6 +16,7 @@ echo "Using $PYTHON_CMD"
 $PYTHON_CMD -m venv .venv
 
 # Install requirements using the python from the venv
-./.venv/bin/python -m pip install -r requirements.txt
+source .venv/bin/activate
+pip install -r requirements.txt
 
 echo "Installation complete."
