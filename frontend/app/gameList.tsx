@@ -8,7 +8,7 @@ export default function AllGames({ allGames }: any) {
   return (
     <div className="flex flex-col gap-4 h-full">
       <h1 className="text-2xl font-bold text-center">All games</h1>
-      <div className="overflow-y-scroll no-scrollbar">
+      <div className="flex flex-col gap-4 overflow-y-scroll no-scrollbar">
         {allGames.map((game: any) => (
           <GameLine game={game} key={game.id} />
         ))}
