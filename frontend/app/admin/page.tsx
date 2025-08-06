@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next/link"
 
 export default async function Game({ params }: any) {
   return (
@@ -7,5 +7,5 @@ export default async function Game({ params }: any) {
       <Link href="/admin/migrate/user">Migrate User Account</Link>
       <Link href="/admin/migrate/game">Migrate Games</Link>
     </div>
-  );
+  )
 }

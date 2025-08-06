@@ -3,7 +3,7 @@ import json
 from urllib.request import urlopen
 from backend.core import make_user_repository
 from flask import request, g
-
+from os import environ
 from jose import jwt
 
 
@@ -24,8 +24,8 @@ from jose import jwt
 # validator = Auth0JWTBearerTokenValidator("pinzen.eu.auth0.com", "https://wordle")
 # require_auth.register_token_validator(validator)
 
-AUTH0_DOMAIN = "pinzen.eu.auth0.com"
-API_AUDIENCE = "https://wordle"
+AUTH0_DOMAIN = environ.get("AUTH0_DOMAIN")
+API_AUDIENCE = environ.get("AUTH0_AUDIENCE")
 ALGORITHMS = ["RS256"]
 
 

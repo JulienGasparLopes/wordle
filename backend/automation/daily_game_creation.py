@@ -25,12 +25,14 @@ def main() -> None:
 
     print("Game created with word:", new_word)
 
-    response: requests.Response = requests.post(
-        environ.get("SLACK_GAME_CREATION_WEBHOOK_URL")
-    )
-
-    if response.ok:
-        print("Notification sent to Slack")
+    if slack_url := environ.get("SLACK_GAME_CREATION_WEBHOOK_URL"):
+        response: requests.Response = requests.post(
+            slack_url,
+        )
+        if response.ok:
+            print("Notification sent to Slack:", response.text)
+        else:
+            print("Failed to send notification to Slack:", response.text)
 
 
 if __name__ == "__main__":
